@@ -1,77 +1,50 @@
 """FastAPI application entry point."""
 
+import logging
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
-import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.middleware import error_handler_middleware, logging_middleware
+from app.api.middleware.error_handler import ErrorHandlerMiddleware
+from app.api.middleware.logging import LoggingMiddleware
 from app.api.routes import articles, comparisons, health
 from app.config import get_settings
-from app.dependencies import cleanup_resources
 
-# Configure structured logging
-structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer(),
-    ],
-    wrapper_class=structlog.stdlib.BoundLogger,
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    cache_logger_on_first_use=True,
-)
-
-logger = structlog.get_logger()
 settings = get_settings()
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, settings.log_level),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan handler for startup/shutdown."""
-    # Startup
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Application lifespan handler."""
     logger.info(
-        "application_starting",
-        version=settings.app_version,
-        debug=settings.debug,
-        ai_provider=settings.default_ai_provider,
+        "Starting application",
+        extra={"version": settings.app_version, "debug": settings.debug},
     )
+    # Store debug flag in app state for error handler
+    app.state.debug = settings.debug
     yield
-
-    # Shutdown
-    logger.info("application_shutting_down")
-    await cleanup_resources()
-    logger.info("application_stopped")
+    logger.info("Shutting down application")
 
 
-# Create FastAPI app
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="""
-    Spectrum - Political News Analyzer API
-
-    Analyze the political leaning of news articles on a -1 (far left) to 1 (far right) spectrum.
-
-    Features:
-    - Analyze single articles for political bias
-    - Extract topics, keywords, and key points
-    - Find related articles on the same topic
-    - Compare multiple articles to identify agreements and disagreements
-    """,
+    description="Political spectrum analyzer for news articles",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json",
 )
 
-# Add CORS middleware
+# Middleware (order matters - last added is first executed)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -79,20 +52,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(ErrorHandlerMiddleware)
 
-# Add custom middleware
-app.middleware("http")(logging_middleware)
-app.middleware("http")(error_handler_middleware)
-
-# Include routers
+# Routes
 app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(articles.router, prefix=settings.api_prefix)
 app.include_router(comparisons.router, prefix=settings.api_prefix)
 
 
-@app.get("/", include_in_schema=False)
-async def root():
-    """Root endpoint redirects to docs."""
+@app.get("/")
+async def root() -> dict[str, str]:
+    """Root endpoint with API information."""
     return {
         "name": settings.app_name,
         "version": settings.app_version,

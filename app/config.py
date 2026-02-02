@@ -1,4 +1,4 @@
-"""Application configuration loaded from environment variables."""
+"""Application settings loaded from environment."""
 
 from functools import lru_cache
 from typing import Optional
@@ -18,13 +18,13 @@ class Settings(BaseSettings):
 
     # API
     api_prefix: str = "/api/v1"
-    allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    allowed_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
     # AI Providers
     default_ai_provider: str = "groq"
 
     groq_api_key: str = Field(default="", alias="GROQ_API_KEY")
-    groq_model: str = "llama-3.1-70b-versatile"
+    groq_model: str = "llama-3.3-70b-versatile"
 
     anthropic_api_key: Optional[str] = Field(default=None, alias="ANTHROPIC_API_KEY")
     claude_model: str = "claude-3-5-sonnet-20241022"
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     redis_url: Optional[str] = Field(default=None, alias="REDIS_URL")
     cache_max_size: int = 500
 
-    # Rate Limiting (prepared for auth)
+    # Rate Limiting
     rate_limit_requests: int = 100
     rate_limit_window_seconds: int = 60
 
