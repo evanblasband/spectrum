@@ -1,0 +1,1 @@
+"""Spectrum - Political News Analyzer."""

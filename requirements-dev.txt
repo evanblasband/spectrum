@@ -1,0 +1,19 @@
+# Include base requirements
+-r requirements.txt
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+
+# HTTP mocking
+respx>=0.20.0
+
+# Linting & Formatting
+ruff>=0.1.0
+
+# Type checking
+mypy>=1.8.0
+
+# Optional: Redis for production caching
+redis>=5.0.0
