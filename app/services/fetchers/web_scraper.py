@@ -174,24 +174,30 @@ class WebScraper(ArticleFetcherInterface):
 
     def _extract_published_date(self, soup: BeautifulSoup) -> Optional[datetime]:
         """Extract article publication date."""
-        # Try meta tags
-        date_metas = [
-            ("meta", {"property": "article:published_time"}),
-            ("meta", {"name": "publication_date"}),
-            ("meta", {"name": "date"}),
-            ("time", {"datetime": True}),
-        ]
+        # Try Open Graph / meta tags first
+        og_time = soup.find("meta", property="article:published_time")
+        if og_time and og_time.get("content"):
+            try:
+                return datetime.fromisoformat(og_time["content"].replace("Z", "+00:00"))
+            except ValueError:
+                pass
 
-        for tag_name, attrs in date_metas:
-            el = soup.find(tag_name, **attrs)
-            if el:
-                date_str = el.get("content") or el.get("datetime")
-                if date_str:
-                    try:
-                        # Handle ISO format
-                        return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-                    except ValueError:
-                        pass
+        # Try meta name attributes
+        for meta_name in ["publication_date", "date", "pubdate"]:
+            meta = soup.find("meta", attrs={"name": meta_name})
+            if meta and meta.get("content"):
+                try:
+                    return datetime.fromisoformat(meta["content"].replace("Z", "+00:00"))
+                except ValueError:
+                    pass
+
+        # Try time element with datetime attribute
+        time_el = soup.find("time", attrs={"datetime": True})
+        if time_el and time_el.get("datetime"):
+            try:
+                return datetime.fromisoformat(time_el["datetime"].replace("Z", "+00:00"))
+            except ValueError:
+                pass
 
         return None
 
