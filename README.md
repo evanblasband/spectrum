@@ -121,10 +121,39 @@ CACHE_BACKEND=memory
 DEBUG=true
 ```
 
+## Features
+
+### Implemented (MVP)
+
+- **Article Analysis**: Paste any news article URL to get political spectrum analysis
+  - Score from -1 (far left) to +1 (far right)
+  - Confidence indicator
+  - AI-generated reasoning
+  - Topic and keyword extraction
+  - Key points identification
+
+- **Related Articles**: Automatically finds related coverage from other sources
+  - Uses NewsAPI to search by extracted keywords
+  - One-click analyze for any related article
+
+- **Article Comparison**: Compare multiple articles side-by-side
+  - Add analyzed articles to comparison list
+  - Visual spectrum showing all articles' positions
+  - Summary of political spread
+  - Shared topics identification
+
+### Not Yet Implemented
+
+- User accounts and saved history
+- Chrome browser extension
+- Redis caching (uses in-memory cache)
+- Advanced comparison (agreements/disagreements extraction)
+
 ## Tech Stack
 
 - **Backend**: Python 3.11, FastAPI, Pydantic
-- **Frontend**: React 18, TypeScript, Tailwind CSS, shadcn/ui
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
 - **AI**: Groq API (llama-3.3-70b-versatile)
 - **News Data**: NewsAPI.org
 - **State Management**: Zustand + TanStack Query
+- **Caching**: In-memory with TTL (cachetools)

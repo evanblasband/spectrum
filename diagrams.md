@@ -173,55 +173,72 @@ flowchart TB
     L2Data -->|Response| Request
 ```
 
-## Frontend Component Hierarchy
+## Frontend Component Hierarchy (Implemented)
 
 ```mermaid
 flowchart TB
-    App[App]
+    App[App.tsx]
 
-    subgraph Providers
-        QP[QueryProvider]
-        TP[ThemeProvider]
+    subgraph Providers["Provider Layer"]
+        QP[QueryClientProvider<br/>TanStack Query]
     end
 
-    subgraph Layout
-        Header
-        Main[Main Content]
-        Footer
-    end
-
-    subgraph Pages
-        Home[HomePage]
-        Analysis[AnalysisPage]
-        Compare[ComparisonPage]
-    end
-
-    subgraph HomeComponents["Home Components"]
+    subgraph MainUI["Main App UI"]
+        Header[Header]
         URLInput[UrlInputForm]
-        Recent[RecentAnalyses]
+        CompBar[Comparison Bar<br/>Selected Articles]
+        Results[Results Section]
+        Disclaimer[Disclaimer]
     end
 
-    subgraph AnalysisComponents["Analysis Components"]
-        ArticleHeader
-        SpectrumViz[SpectrumVisualization]
-        Summary[ArticleSummary]
-        Related[RelatedArticles]
+    subgraph ResultsSection["Results Display"]
+        Loading[Loading Spinner]
+        Error[Error Message]
+        AnalysisCard[AnalysisCard]
+        RelatedSection[Related Articles Section]
+        CompView[ComparisonView]
+    end
+
+    subgraph AnalysisComponents["Analysis Card Components"]
+        SpectrumViz[SpectrumScale]
+        ConfInd[ConfidenceIndicator]
+        Summary[ArticleSummary<br/>Topics + Keywords + Points]
+    end
+
+    subgraph RelatedComponents["Related Articles Components"]
+        RelatedList[RelatedArticlesList]
+        RelatedCard[RelatedArticleCard]
+    end
+
+    subgraph ComparisonComponents["Comparison Components"]
+        CompSpectrum[ComparisonSpectrum<br/>Multi-article markers]
+        CompSummary[ComparisonSummary<br/>Agreements/Disagreements]
     end
 
     subgraph SpectrumParts["Spectrum Parts"]
         Scale[SpectrumScale]
         Marker[SpectrumMarker]
         Labels[SpectrumLabels]
-        Confidence[ConfidenceIndicator]
+        Mini[MiniSpectrum]
+    end
+
+    subgraph State["State Management"]
+        RQ[TanStack Query<br/>Server State]
+        Zustand[useComparisonStore<br/>Zustand]
     end
 
     App --> Providers
-    Providers --> Layout
-    Main --> Pages
+    Providers --> MainUI
+    Results --> ResultsSection
 
-    Home --> HomeComponents
-    Analysis --> AnalysisComponents
+    AnalysisCard --> AnalysisComponents
+    RelatedSection --> RelatedComponents
+    CompView --> ComparisonComponents
+
     SpectrumViz --> SpectrumParts
+    CompSpectrum --> SpectrumParts
+
+    App -.-> State
 ```
 
 ## Data Flow: Full Analysis Workflow

@@ -17,27 +17,27 @@ Spectrum is a political spectrum analyzer for news articles. This document descr
 
 ## 1. Project Structure
 
+### Backend (Python/FastAPI)
+
 ```
 spectrum/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                    # FastAPI app initialization
 │   ├── config.py                  # Settings and configuration
-│   ├── dependencies.py            # Dependency injection setup
 │   │
 │   ├── api/                       # API Layer (Controllers)
 │   │   ├── __init__.py
+│   │   ├── deps.py                # Dependency injection for routes
 │   │   ├── routes/
 │   │   │   ├── __init__.py
-│   │   │   ├── articles.py        # Article analysis endpoints
+│   │   │   ├── articles.py        # Article analysis + related endpoints
 │   │   │   ├── comparisons.py     # Article comparison endpoints
 │   │   │   └── health.py          # Health check endpoints
-│   │   ├── middleware/
-│   │   │   ├── __init__.py
-│   │   │   ├── error_handler.py   # Global error handling
-│   │   │   ├── logging.py         # Request/response logging
-│   │   │   └── rate_limiter.py    # Rate limiting (prepared for auth)
-│   │   └── deps.py                # Route-level dependencies
+│   │   └── middleware/
+│   │       ├── __init__.py
+│   │       ├── error_handler.py   # Global error handling
+│   │       └── logging.py         # Request/response logging
 │   │
 │   ├── core/                      # Core Business Logic
 │   │   ├── __init__.py
@@ -54,71 +54,112 @@ spectrum/
 │   │   │   └── cache.py           # Cache interface
 │   │   └── use_cases/             # Application use cases
 │   │       ├── __init__.py
-│   │       ├── analyze_article.py
-│   │       ├── find_related.py
-│   │       └── compare_articles.py
+│   │       ├── analyze_article.py # Core analysis orchestration
+│   │       ├── find_related.py    # Related article discovery
+│   │       └── compare_articles.py # Multi-article comparison
 │   │
 │   ├── services/                  # Service Implementations (Adapters)
 │   │   ├── __init__.py
 │   │   ├── ai/                    # AI Provider implementations
 │   │   │   ├── __init__.py
-│   │   │   ├── base.py            # Base AI provider
-│   │   │   ├── groq_provider.py   # Groq implementation
-│   │   │   ├── claude_provider.py # Claude implementation
-│   │   │   ├── openai_provider.py # OpenAI implementation
+│   │   │   ├── base.py            # Base AI provider with prompts
+│   │   │   ├── groq_provider.py   # Groq implementation (primary)
 │   │   │   └── factory.py         # Provider factory
-│   │   ├── fetchers/              # Article fetching implementations
+│   │   ├── fetchers/
 │   │   │   ├── __init__.py
-│   │   │   ├── web_scraper.py     # Generic web scraper
-│   │   │   └── readability.py     # Readability extraction
-│   │   ├── aggregators/           # News API implementations
+│   │   │   └── web_scraper.py     # Web scraping with BeautifulSoup
+│   │   ├── aggregators/
 │   │   │   ├── __init__.py
-│   │   │   ├── newsapi.py         # NewsAPI.org integration
-│   │   │   └── gnews.py           # GNews integration
-│   │   └── cache/                 # Cache implementations
+│   │   │   └── newsapi.py         # NewsAPI.org integration
+│   │   └── cache/
 │   │       ├── __init__.py
-│   │       ├── memory_cache.py    # In-memory cache
-│   │       └── redis_cache.py     # Redis cache (future)
+│   │       ├── memory_cache.py    # In-memory TTL cache
+│   │       └── cache_keys.py      # Cache key generation
 │   │
-│   ├── schemas/                   # Pydantic Schemas (DTOs)
-│   │   ├── __init__.py
-│   │   ├── requests.py            # Request schemas
-│   │   ├── responses.py           # Response schemas
-│   │   └── internal.py            # Internal transfer objects
-│   │
-│   └── utils/                     # Utilities
+│   └── schemas/                   # Pydantic Schemas (DTOs)
 │       ├── __init__.py
-│       ├── text_processing.py     # Text cleaning utilities
-│       ├── url_utils.py           # URL validation/normalization
-│       └── retry.py               # Retry decorators
-│
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py                # Pytest fixtures
-│   ├── unit/
-│   │   ├── test_use_cases.py
-│   │   ├── test_ai_providers.py
-│   │   └── test_fetchers.py
-│   ├── integration/
-│   │   ├── test_api.py
-│   │   └── test_external_services.py
-│   └── fixtures/
-│       └── sample_articles.json
+│       ├── requests.py            # Request schemas
+│       └── responses.py           # Response schemas
 │
 ├── docker/
-│   ├── Dockerfile
-│   ├── Dockerfile.dev
-│   └── docker-compose.yml
-│
-├── scripts/
-│   ├── run_dev.sh
-│   └── test.sh
+│   ├── Dockerfile                 # Production Docker image
+│   ├── Dockerfile.web             # Frontend Docker image
+│   └── docker-compose.yml         # Local development stack
 │
 ├── .env.example
 ├── .gitignore
 ├── pyproject.toml
 ├── requirements.txt
 └── README.md
+```
+
+### Frontend (React/TypeScript)
+
+```
+spectrum-web/
+├── src/
+│   ├── main.tsx                   # Entry point
+│   ├── index.css                  # Global styles (Tailwind)
+│   │
+│   ├── app/
+│   │   ├── App.tsx                # Root component with main UI
+│   │   └── providers/
+│   │       └── index.tsx          # React Query provider setup
+│   │
+│   ├── features/                  # Feature-based modules
+│   │   ├── spectrum/              # Political spectrum visualization
+│   │   │   ├── components/
+│   │   │   │   ├── SpectrumScale.tsx
+│   │   │   │   ├── SpectrumMarker.tsx
+│   │   │   │   ├── SpectrumLabels.tsx
+│   │   │   │   ├── ConfidenceIndicator.tsx
+│   │   │   │   └── MiniSpectrum.tsx
+│   │   │   ├── utils/
+│   │   │   │   └── spectrumColors.ts
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── analysis/              # Article analysis feature
+│   │   │   ├── components/
+│   │   │   │   ├── UrlInputForm.tsx
+│   │   │   │   ├── AnalysisCard.tsx
+│   │   │   │   └── ArticleSummary.tsx
+│   │   │   ├── hooks/
+│   │   │   │   └── useAnalyzeArticle.ts
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── related-articles/      # Related articles feature
+│   │   │   ├── components/
+│   │   │   │   ├── RelatedArticlesList.tsx
+│   │   │   │   └── RelatedArticleCard.tsx
+│   │   │   ├── hooks/
+│   │   │   │   └── useFindRelated.ts
+│   │   │   └── index.ts
+│   │   │
+│   │   └── comparison/            # Article comparison feature
+│   │       ├── components/
+│   │       │   ├── ComparisonView.tsx
+│   │       │   ├── ComparisonSummary.tsx
+│   │       │   └── ComparisonSpectrum.tsx
+│   │       └── index.ts
+│   │
+│   ├── components/
+│   │   └── common/                # Shared UI components
+│   │       ├── LoadingSpinner.tsx
+│   │       ├── ErrorMessage.tsx
+│   │       └── Disclaimer.tsx
+│   │
+│   ├── stores/
+│   │   └── useComparisonStore.ts  # Zustand store for comparison
+│   │
+│   └── lib/
+│       └── api/
+│           └── client.ts          # API client with types
+│
+├── package.json
+├── vite.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── index.html
 ```
 
 ---
