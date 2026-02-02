@@ -1,4 +1,4 @@
-"""Analysis result domain entities."""
+"""Analysis result models."""
 
 from datetime import datetime
 from typing import Optional
@@ -19,44 +19,17 @@ class PoliticalLeaning(BaseModel):
     reasoning: str = Field(..., description="Explanation of the score")
 
     # Detailed breakdown
-    economic_score: Optional[float] = Field(
-        default=None,
-        ge=-1.0,
-        le=1.0,
-        description="Economic policy stance",
-    )
-    social_score: Optional[float] = Field(
-        default=None,
-        ge=-1.0,
-        le=1.0,
-        description="Social policy stance",
-    )
-
-    @property
-    def label(self) -> str:
-        """Human-readable label for the score."""
-        if self.score <= -0.6:
-            return "Far Left"
-        elif self.score <= -0.2:
-            return "Left"
-        elif self.score <= 0.2:
-            return "Center"
-        elif self.score <= 0.6:
-            return "Right"
-        else:
-            return "Far Right"
+    economic_score: Optional[float] = Field(None, ge=-1.0, le=1.0)
+    social_score: Optional[float] = Field(None, ge=-1.0, le=1.0)
 
 
 class TopicAnalysis(BaseModel):
-    """Topic and keyword extraction result."""
+    """Topic and keyword extraction."""
 
     primary_topic: str
-    secondary_topics: list[str] = Field(default_factory=list)
-    keywords: list[str] = Field(..., max_length=10)
-    entities: list[str] = Field(
-        default_factory=list,
-        description="Named entities (people, organizations)",
-    )
+    secondary_topics: list[str] = []
+    keywords: list[str] = Field(default_factory=list)
+    entities: list[str] = []  # Named entities (people, organizations)
 
 
 class ArticlePoint(BaseModel):
@@ -66,6 +39,17 @@ class ArticlePoint(BaseModel):
     statement: str
     supporting_quote: Optional[str] = None
     sentiment: str = Field(..., pattern="^(positive|negative|neutral)$")
+
+
+class PointComparison(BaseModel):
+    """Comparison between points from different articles."""
+
+    point_a: ArticlePoint
+    point_b: ArticlePoint
+    article_a_id: str
+    article_b_id: str
+    relationship: str = Field(..., pattern="^(agrees|disagrees|related|unrelated)$")
+    explanation: str
 
 
 class ArticleAnalysis(BaseModel):
@@ -78,10 +62,8 @@ class ArticleAnalysis(BaseModel):
 
     political_leaning: PoliticalLeaning
     topics: TopicAnalysis
-    key_points: list[ArticlePoint] = Field(default_factory=list)
+    key_points: list[ArticlePoint]
 
     analyzed_at: datetime
     ai_provider: str
     cached: bool = False
-
-    model_config = {"from_attributes": True}

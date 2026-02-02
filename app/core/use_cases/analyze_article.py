@@ -1,9 +1,9 @@
-"""Use case for analyzing a single article's political leaning."""
+"""Use case for analyzing a single article."""
 
 import asyncio
-from datetime import datetime
-
-import structlog
+import logging
+from datetime import datetime, timezone
+from typing import Optional
 
 from app.core.entities.analysis import ArticleAnalysis
 from app.core.entities.article import Article
@@ -12,25 +12,17 @@ from app.core.interfaces.article_fetcher import ArticleFetcherInterface
 from app.core.interfaces.cache import CacheInterface
 from app.services.cache.cache_keys import CacheKeys
 
-logger = structlog.get_logger()
+logger = logging.getLogger(__name__)
 
 
 class AnalyzeArticleUseCase:
-    """Use case for analyzing a single article.
-
-    Orchestrates:
-    1. Fetching article content (with caching)
-    2. Running AI analysis for political leaning
-    3. Extracting topics and keywords
-    4. Extracting key points (optional)
-    5. Caching results
-    """
+    """Use case for analyzing a single article."""
 
     def __init__(
         self,
         ai_provider: AIProviderInterface,
         article_fetcher: ArticleFetcherInterface,
-        cache: CacheInterface,
+        cache: Optional[CacheInterface] = None,
     ):
         self.ai = ai_provider
         self.fetcher = article_fetcher
@@ -42,42 +34,31 @@ class AnalyzeArticleUseCase:
         force_refresh: bool = False,
         include_points: bool = True,
     ) -> ArticleAnalysis:
-        """Analyze an article's political leaning.
-
-        Args:
-            url: Article URL to analyze
-            force_refresh: Bypass cache and re-analyze
-            include_points: Extract key points (slower but more detailed)
-
-        Returns:
-            ArticleAnalysis with political leaning, topics, and points
-
-        Raises:
-            FetchError: If article cannot be fetched
-            ParseError: If content cannot be extracted
         """
-        log = logger.bind(url=url, provider=self.ai.name)
+        Analyze an article's political leaning.
+
+        1. Check cache for existing analysis
+        2. Fetch article content (cached)
+        3. Run AI analysis
+        4. Cache and return results
+        """
+        logger.info(f"Analyzing article: {url}")
 
         # Check for cached analysis
-        if not force_refresh:
+        if self.cache and not force_refresh:
             cache_key = CacheKeys.analysis(url, self.ai.name)
             cached = await self.cache.get(cache_key)
             if cached:
-                log.info("cache_hit", cache_key=cache_key)
+                logger.info(f"Cache hit for analysis: {cache_key}")
                 cached.cached = True
                 return cached
 
-        # Fetch article (with caching)
-        log.info("fetching_article")
-        article = await self._fetch_article(url)
-        log.info(
-            "article_fetched",
-            title=article.title[:50],
-            word_count=article.word_count,
-        )
+        # Fetch article
+        logger.info("Fetching article content")
+        article = await self._fetch_article(url, force_refresh)
 
         # Run AI analysis in parallel
-        log.info("running_analysis")
+        logger.info("Running AI analysis")
         leaning, topics = await asyncio.gather(
             self.ai.analyze_political_leaning(
                 article.title,
@@ -87,13 +68,10 @@ class AnalyzeArticleUseCase:
             self.ai.extract_topics(article.title, article.content),
         )
 
-        # Extract key points if requested
+        # Extract points if requested
         points = []
         if include_points:
-            points = await self.ai.extract_key_points(
-                article.title,
-                article.content,
-            )
+            points = await self.ai.extract_key_points(article.title, article.content)
 
         # Build result
         analysis = ArticleAnalysis(
@@ -104,40 +82,32 @@ class AnalyzeArticleUseCase:
             political_leaning=leaning,
             topics=topics,
             key_points=points,
-            analyzed_at=datetime.utcnow(),
+            analyzed_at=datetime.now(timezone.utc),
             ai_provider=self.ai.name,
             cached=False,
         )
 
         # Cache result
-        cache_key = CacheKeys.analysis(url, self.ai.name)
-        await self.cache.set(cache_key, analysis)
+        if self.cache:
+            cache_key = CacheKeys.analysis(url, self.ai.name)
+            await self.cache.set(cache_key, analysis)
 
-        log.info(
-            "analysis_complete",
-            score=leaning.score,
-            label=leaning.label,
-            confidence=leaning.confidence,
-        )
-
+        logger.info(f"Analysis complete: score={leaning.score}")
         return analysis
 
-    async def _fetch_article(self, url: str) -> Article:
-        """Fetch article with caching.
-
-        Args:
-            url: Article URL
-
-        Returns:
-            Article entity
-        """
-        cache_key = CacheKeys.article(url)
-
-        cached = await self.cache.get(cache_key)
-        if cached:
-            return cached
+    async def _fetch_article(self, url: str, force_refresh: bool = False) -> Article:
+        """Fetch article with caching."""
+        if self.cache and not force_refresh:
+            cache_key = CacheKeys.article(url)
+            cached = await self.cache.get(cache_key)
+            if cached:
+                logger.info(f"Cache hit for article: {cache_key}")
+                return cached
 
         article = await self.fetcher.fetch(url)
-        await self.cache.set(cache_key, article)
+
+        if self.cache:
+            cache_key = CacheKeys.article(url)
+            await self.cache.set(cache_key, article)
 
         return article

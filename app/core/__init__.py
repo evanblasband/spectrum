@@ -1,1 +1,1 @@
-"""Core business logic layer."""
+"""Core business logic for Spectrum."""

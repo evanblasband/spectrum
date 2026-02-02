@@ -1,4 +1,4 @@
-"""Article domain entities."""
+"""Article domain model."""
 
 from datetime import datetime
 from typing import Optional
@@ -11,16 +11,11 @@ class ArticleSource(BaseModel):
 
     name: str
     domain: str
-    known_bias: Optional[float] = Field(
-        default=None,
-        ge=-1.0,
-        le=1.0,
-        description="Pre-known bias if available (-1=left, 1=right)",
-    )
+    known_bias: Optional[float] = None  # Pre-known bias if available
 
 
 class Article(BaseModel):
-    """Core article entity representing fetched article content."""
+    """Core article entity."""
 
     id: str = Field(..., description="Unique identifier (hash of URL)")
     url: HttpUrl
@@ -31,10 +26,3 @@ class Article(BaseModel):
     author: Optional[str] = None
     word_count: int
     fetched_at: datetime
-
-    @classmethod
-    def generate_id(cls, url: str) -> str:
-        """Generate consistent ID from URL."""
-        import hashlib
-
-        return hashlib.md5(url.encode()).hexdigest()[:12]

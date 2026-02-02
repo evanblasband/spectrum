@@ -1,192 +1,100 @@
-"""Use case for finding related articles on the same topic."""
+"""Use case for finding related articles."""
 
-from urllib.parse import urlparse
+import logging
+from typing import Optional
 
-import structlog
-
-from app.core.entities.analysis import ArticleAnalysis
+from app.core.interfaces.ai_provider import AIProviderInterface
+from app.core.interfaces.article_fetcher import ArticleFetcherInterface
 from app.core.interfaces.cache import CacheInterface
-from app.core.interfaces.news_aggregator import (
-    NewsAggregatorInterface,
-    NewsArticlePreview,
-    NewsSearchResult,
-)
-from app.core.use_cases.analyze_article import AnalyzeArticleUseCase
+from app.core.interfaces.news_aggregator import NewsAggregatorInterface, NewsArticlePreview
 from app.services.cache.cache_keys import CacheKeys
 
-logger = structlog.get_logger()
+logger = logging.getLogger(__name__)
 
 
 class FindRelatedUseCase:
-    """Use case for finding related articles.
-
-    Orchestrates:
-    1. Analyzing original article (if URL provided)
-    2. Searching news APIs for related articles
-    3. Deduplicating and filtering results
-    4. Optionally analyzing related articles
-    """
+    """Use case for finding related articles."""
 
     def __init__(
         self,
         news_aggregator: NewsAggregatorInterface,
-        analyze_use_case: AnalyzeArticleUseCase,
-        cache: CacheInterface,
+        ai_provider: AIProviderInterface,
+        article_fetcher: ArticleFetcherInterface,
+        cache: Optional[CacheInterface] = None,
     ):
-        self.news = news_aggregator
-        self.analyze = analyze_use_case
+        self.aggregator = news_aggregator
+        self.ai = ai_provider
+        self.fetcher = article_fetcher
         self.cache = cache
 
     async def execute(
         self,
-        url: str | None = None,
-        keywords: list[str] | None = None,
-        topic: str | None = None,
+        url: Optional[str] = None,
+        keywords: Optional[list[str]] = None,
+        topic: Optional[str] = None,
         limit: int = 5,
         days_back: int = 7,
-        analyze_results: bool = False,
-    ) -> dict:
-        """Find related articles on the same topic.
+    ) -> tuple[list[str], list[NewsArticlePreview]]:
+        """
+        Find related articles.
 
-        Must provide either url, keywords, or topic.
-
-        Args:
-            url: Original article URL (will extract keywords)
-            keywords: Direct search keywords
-            topic: Topic/category to search
-            limit: Maximum number of results
-            days_back: How many days back to search
-            analyze_results: Run political analysis on results
+        Either provide a URL (to extract keywords from) or keywords/topic directly.
 
         Returns:
-            Dict with original_analysis (if URL), related articles, and optionally analyses
+            Tuple of (keywords_used, articles_found)
         """
-        log = logger.bind(
-            url=url,
-            keywords=keywords,
-            topic=topic,
-            aggregator=self.news.name,
-        )
-
-        result = {
-            "original_analysis": None,
-            "search_keywords": [],
-            "related_articles": [],
-            "related_analyses": [],
-        }
-
-        # Get keywords from URL or direct input
-        search_keywords = keywords or []
-        exclude_domain = None
-
-        if url:
-            # Check cache for related articles
+        # Check cache if URL provided
+        if url and self.cache:
             cache_key = CacheKeys.related(url)
             cached = await self.cache.get(cache_key)
             if cached:
-                log.info("cache_hit", cache_key=cache_key)
+                logger.info(f"Cache hit for related articles: {cache_key}")
                 return cached
 
-            # Analyze original to get keywords
-            log.info("analyzing_original")
-            original = await self.analyze.execute(url, include_points=False)
-            result["original_analysis"] = original
+        # Extract keywords from URL if provided
+        if url and not keywords:
+            keywords = await self._extract_keywords_from_url(url)
 
-            # Use extracted keywords
-            search_keywords = original.topics.keywords[:5]
-            if original.topics.primary_topic:
-                search_keywords.insert(0, original.topics.primary_topic)
+        # Use topic as keyword if provided
+        if topic and not keywords:
+            keywords = [topic]
 
-            # Exclude original source from results
-            exclude_domain = urlparse(url).netloc.replace("www.", "")
-
-        elif topic:
-            search_keywords = [topic]
-
-        if not search_keywords:
-            raise ValueError("Must provide url, keywords, or topic")
-
-        result["search_keywords"] = search_keywords
+        if not keywords:
+            return [], []
 
         # Search for related articles
-        log.info("searching_related", keywords=search_keywords)
-        search_result = await self.news.search(
-            keywords=search_keywords,
-            days_back=days_back,
-            limit=limit + 5,  # Get extras to allow for filtering
-            exclude_domains=[exclude_domain] if exclude_domain else None,
-        )
-
-        # Deduplicate and filter
-        related = self._deduplicate_and_filter(
-            search_result.articles,
-            exclude_url=url,
+        articles = await self.aggregator.search(
+            keywords=keywords,
             limit=limit,
+            days_back=days_back,
         )
-        result["related_articles"] = related
 
-        log.info("found_related", count=len(related))
-
-        # Optionally analyze related articles
-        if analyze_results and related:
-            log.info("analyzing_related")
-            analyses = []
-            for article in related[:limit]:
-                try:
-                    analysis = await self.analyze.execute(
-                        str(article.url),
-                        include_points=False,
-                    )
-                    analyses.append(analysis)
-                except Exception as e:
-                    log.warning("related_analysis_failed", url=str(article.url), error=str(e))
-            result["related_analyses"] = analyses
-
-        # Cache results (if URL was provided)
+        # Filter out the original URL if present
         if url:
+            articles = [a for a in articles if str(a.url) != url]
+
+        # Cache results
+        if url and self.cache:
             cache_key = CacheKeys.related(url)
-            await self.cache.set(cache_key, result)
+            await self.cache.set(cache_key, (keywords, articles))
 
-        return result
+        return keywords, articles
 
-    def _deduplicate_and_filter(
-        self,
-        articles: list[NewsArticlePreview],
-        exclude_url: str | None = None,
-        limit: int = 5,
-    ) -> list[NewsArticlePreview]:
-        """Deduplicate and filter article results.
+    async def _extract_keywords_from_url(self, url: str) -> list[str]:
+        """Extract keywords from article URL using AI."""
+        try:
+            # Fetch article
+            article = await self.fetcher.fetch(url)
 
-        - Remove duplicates by URL
-        - Remove original article
-        - Ensure source diversity (max 2 per source)
-        - Limit to requested count
-        """
-        seen_urls = set()
-        source_counts: dict[str, int] = {}
-        filtered = []
+            # Extract topics using AI
+            topics = await self.ai.extract_topics(article.title, article.content)
 
-        for article in articles:
-            url_str = str(article.url)
+            # Combine keywords
+            keywords = [topics.primary_topic]
+            keywords.extend(topics.keywords[:4])  # Add top keywords
 
-            # Skip original
-            if exclude_url and url_str == exclude_url:
-                continue
+            return keywords[:5]  # Limit to 5 keywords
 
-            # Skip duplicates
-            if url_str in seen_urls:
-                continue
-
-            # Limit per source for diversity
-            source = article.source
-            if source_counts.get(source, 0) >= 2:
-                continue
-
-            seen_urls.add(url_str)
-            source_counts[source] = source_counts.get(source, 0) + 1
-            filtered.append(article)
-
-            if len(filtered) >= limit:
-                break
-
-        return filtered
+        except Exception as e:
+            logger.error(f"Failed to extract keywords from {url}: {e}")
+            return []
