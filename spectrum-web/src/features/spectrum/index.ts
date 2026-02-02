@@ -1,0 +1,6 @@
+export { SpectrumScale } from './components/SpectrumScale'
+export { SpectrumMarker } from './components/SpectrumMarker'
+export { SpectrumLabels } from './components/SpectrumLabels'
+export { ConfidenceIndicator } from './components/ConfidenceIndicator'
+export { MiniSpectrum } from './components/MiniSpectrum'
+export * from './utils/spectrumColors'
