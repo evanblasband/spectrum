@@ -1,27 +1,24 @@
-"""Web scraper for fetching article content."""
+"""Web scraping implementation for article fetching."""
 
-from datetime import datetime
+import hashlib
+import logging
+import re
+from datetime import datetime, timezone
 from typing import Optional
 from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
-from readability import Document
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.core.entities.article import Article, ArticleSource
-from app.core.interfaces.article_fetcher import (
-    ArticleFetcherInterface,
-    FetchError,
-    ParseError,
-)
+from app.core.interfaces.article_fetcher import ArticleFetchError, ArticleFetcherInterface
+
+logger = logging.getLogger(__name__)
 
 
 class WebScraper(ArticleFetcherInterface):
-    """Web scraper implementation for fetching article content.
-
-    Uses readability-lxml for content extraction and BeautifulSoup
-    for metadata parsing.
-    """
+    """Web scraper for extracting article content from URLs."""
 
     def __init__(
         self,
@@ -30,149 +27,226 @@ class WebScraper(ArticleFetcherInterface):
     ):
         self.timeout = timeout
         self.user_agent = user_agent
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     async def get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
-        if self._client is None or self._client.is_closed:
+        if self._client is None:
             self._client = httpx.AsyncClient(
                 timeout=self.timeout,
-                headers={
-                    "User-Agent": self.user_agent,
-                    "Accept": "text/html,application/xhtml+xml",
-                    "Accept-Language": "en-US,en;q=0.9",
-                },
+                headers={"User-Agent": self.user_agent},
                 follow_redirects=True,
             )
         return self._client
 
-    async def fetch(self, url: str) -> Article:
-        """Fetch and parse article from URL.
-
-        Args:
-            url: Article URL to fetch
-
-        Returns:
-            Article entity with extracted content
-
-        Raises:
-            FetchError: If article cannot be fetched
-            ParseError: If content cannot be extracted
-        """
-        client = await self.get_client()
-
-        # Fetch HTML
-        try:
-            response = await client.get(url)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            raise FetchError(url, str(e), e.response.status_code)
-        except httpx.RequestError as e:
-            raise FetchError(url, str(e))
-
-        html = response.text
-
-        # Parse with readability
-        try:
-            doc = Document(html)
-            title = doc.title()
-            content = self._clean_content(doc.summary())
-        except Exception as e:
-            raise ParseError(url, f"Readability extraction failed: {e}")
-
-        if not content or len(content) < 100:
-            raise ParseError(url, "Could not extract meaningful content")
-
-        # Extract metadata with BeautifulSoup
-        soup = BeautifulSoup(html, "lxml")
-        metadata = self._extract_metadata(soup, url)
-
-        # Build article entity
-        article_id = Article.generate_id(url)
-        domain = urlparse(url).netloc.replace("www.", "")
-
-        return Article(
-            id=article_id,
-            url=url,
-            title=title or metadata.get("title", "Unknown"),
-            content=content,
-            source=ArticleSource(
-                name=metadata.get("site_name", domain),
-                domain=domain,
-            ),
-            published_at=metadata.get("published_at"),
-            author=metadata.get("author"),
-            word_count=len(content.split()),
-            fetched_at=datetime.utcnow(),
-        )
-
-    async def health_check(self) -> bool:
-        """Check if scraper is operational."""
-        try:
-            client = await self.get_client()
-            response = await client.get("https://httpbin.org/status/200")
-            return response.status_code == 200
-        except Exception:
-            return False
-
     async def close(self) -> None:
-        """Close HTTP client."""
+        """Close the HTTP client."""
         if self._client is not None:
             await self._client.aclose()
             self._client = None
 
-    def _clean_content(self, html: str) -> str:
-        """Clean HTML content to plain text."""
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
+    async def fetch(self, url: str) -> Article:
+        """Fetch and parse article content from URL."""
+        logger.info(f"Fetching article from {url}")
+
+        try:
+            client = await self.get_client()
+            response = await client.get(url)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise ArticleFetchError(url, f"HTTP {e.response.status_code}")
+        except httpx.RequestError as e:
+            raise ArticleFetchError(url, str(e))
+
+        html = response.text
         soup = BeautifulSoup(html, "lxml")
 
+        # Extract metadata
+        title = self._extract_title(soup)
+        content = self._extract_content(soup)
+        author = self._extract_author(soup)
+        published_at = self._extract_published_date(soup)
+
+        if not content or len(content) < 100:
+            raise ArticleFetchError(url, "Could not extract article content")
+
+        # Parse domain for source info
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc.replace("www.", "")
+        source_name = self._domain_to_source_name(domain)
+
+        # Generate unique ID from URL
+        article_id = hashlib.md5(url.encode()).hexdigest()[:12]
+
+        return Article(
+            id=article_id,
+            url=url,
+            title=title,
+            content=content,
+            source=ArticleSource(name=source_name, domain=domain),
+            published_at=published_at,
+            author=author,
+            word_count=len(content.split()),
+            fetched_at=datetime.now(timezone.utc),
+        )
+
+    def _extract_title(self, soup: BeautifulSoup) -> str:
+        """Extract article title."""
+        # Try Open Graph title first
+        og_title = soup.find("meta", property="og:title")
+        if og_title and og_title.get("content"):
+            return og_title["content"].strip()
+
+        # Try standard title tag
+        title_tag = soup.find("title")
+        if title_tag:
+            title = title_tag.get_text().strip()
+            # Remove common suffixes like " - News Site Name"
+            title = re.sub(r"\s*[-|]\s*[^-|]+$", "", title)
+            return title
+
+        # Try h1 tag
+        h1 = soup.find("h1")
+        if h1:
+            return h1.get_text().strip()
+
+        return "Untitled Article"
+
+    def _extract_content(self, soup: BeautifulSoup) -> str:
+        """Extract main article content."""
         # Remove unwanted elements
-        for tag in soup.find_all(["script", "style", "nav", "footer", "aside"]):
+        for tag in soup(["script", "style", "nav", "header", "footer", "aside", "ad"]):
             tag.decompose()
 
-        # Get text
-        text = soup.get_text(separator=" ", strip=True)
+        # Try article tag first
+        article = soup.find("article")
+        if article:
+            paragraphs = article.find_all("p")
+            if paragraphs:
+                return self._clean_text("\n\n".join(p.get_text() for p in paragraphs))
 
-        # Clean up whitespace
-        lines = [line.strip() for line in text.split("\n")]
-        text = " ".join(line for line in lines if line)
+        # Try common content containers
+        content_selectors = [
+            {"class_": re.compile(r"article[-_]?(body|content|text)", re.I)},
+            {"class_": re.compile(r"(post|entry)[-_]?(body|content)", re.I)},
+            {"class_": re.compile(r"story[-_]?(body|content)", re.I)},
+            {"id": re.compile(r"article[-_]?(body|content)", re.I)},
+        ]
 
-        return text
+        for selector in content_selectors:
+            container = soup.find("div", **selector)
+            if container:
+                paragraphs = container.find_all("p")
+                if paragraphs:
+                    return self._clean_text("\n\n".join(p.get_text() for p in paragraphs))
 
-    def _extract_metadata(self, soup: BeautifulSoup, url: str) -> dict:
-        """Extract article metadata from HTML."""
-        metadata = {}
+        # Fallback: get all paragraphs with substantial text
+        all_paragraphs = soup.find_all("p")
+        content_paragraphs = [
+            p.get_text() for p in all_paragraphs if len(p.get_text().strip()) > 50
+        ]
 
-        # Try Open Graph tags first
-        og_title = soup.find("meta", property="og:title")
-        if og_title:
-            metadata["title"] = og_title.get("content")
+        return self._clean_text("\n\n".join(content_paragraphs))
 
-        og_site_name = soup.find("meta", property="og:site_name")
-        if og_site_name:
-            metadata["site_name"] = og_site_name.get("content")
+    def _extract_author(self, soup: BeautifulSoup) -> Optional[str]:
+        """Extract article author."""
+        # Try meta tag
+        author_meta = soup.find("meta", {"name": "author"})
+        if author_meta and author_meta.get("content"):
+            return author_meta["content"].strip()
 
-        # Try article tags
-        article_author = soup.find("meta", attrs={"name": "author"})
-        if article_author:
-            metadata["author"] = article_author.get("content")
+        # Try common author patterns
+        author_patterns = [
+            {"class_": re.compile(r"author", re.I)},
+            {"rel": "author"},
+            {"itemprop": "author"},
+        ]
 
-        # Try published time
-        published = soup.find("meta", property="article:published_time")
-        if published:
-            try:
-                from dateutil.parser import parse as parse_date
-                metadata["published_at"] = parse_date(published.get("content"))
-            except Exception:
-                pass
+        for pattern in author_patterns:
+            author_el = soup.find(["a", "span", "div"], **pattern)
+            if author_el:
+                text = author_el.get_text().strip()
+                if text and len(text) < 100:  # Sanity check
+                    return text
 
-        # Try time tag
-        if "published_at" not in metadata:
-            time_tag = soup.find("time")
-            if time_tag and time_tag.get("datetime"):
-                try:
-                    from dateutil.parser import parse as parse_date
-                    metadata["published_at"] = parse_date(time_tag.get("datetime"))
-                except Exception:
-                    pass
+        return None
 
-        return metadata
+    def _extract_published_date(self, soup: BeautifulSoup) -> Optional[datetime]:
+        """Extract article publication date."""
+        # Try meta tags
+        date_metas = [
+            ("meta", {"property": "article:published_time"}),
+            ("meta", {"name": "publication_date"}),
+            ("meta", {"name": "date"}),
+            ("time", {"datetime": True}),
+        ]
+
+        for tag_name, attrs in date_metas:
+            el = soup.find(tag_name, **attrs)
+            if el:
+                date_str = el.get("content") or el.get("datetime")
+                if date_str:
+                    try:
+                        # Handle ISO format
+                        return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+                    except ValueError:
+                        pass
+
+        return None
+
+    def _clean_text(self, text: str) -> str:
+        """Clean extracted text."""
+        # Remove extra whitespace
+        text = re.sub(r"\s+", " ", text)
+        # Remove empty lines
+        lines = [line.strip() for line in text.split("\n") if line.strip()]
+        return "\n\n".join(lines)
+
+    def _domain_to_source_name(self, domain: str) -> str:
+        """Convert domain to readable source name."""
+        # Common mappings
+        known_sources = {
+            "nytimes.com": "The New York Times",
+            "washingtonpost.com": "The Washington Post",
+            "cnn.com": "CNN",
+            "foxnews.com": "Fox News",
+            "bbc.com": "BBC",
+            "bbc.co.uk": "BBC",
+            "reuters.com": "Reuters",
+            "apnews.com": "Associated Press",
+            "huffpost.com": "HuffPost",
+            "breitbart.com": "Breitbart",
+            "theguardian.com": "The Guardian",
+            "wsj.com": "Wall Street Journal",
+            "politico.com": "Politico",
+            "thehill.com": "The Hill",
+            "npr.org": "NPR",
+            "nbcnews.com": "NBC News",
+            "cbsnews.com": "CBS News",
+            "abcnews.go.com": "ABC News",
+            "msnbc.com": "MSNBC",
+            "economist.com": "The Economist",
+            "nationalreview.com": "National Review",
+            "motherjones.com": "Mother Jones",
+            "slate.com": "Slate",
+            "vox.com": "Vox",
+            "theatlantic.com": "The Atlantic",
+        }
+
+        if domain in known_sources:
+            return known_sources[domain]
+
+        # Convert domain to title case
+        name = domain.split(".")[0]
+        return name.replace("-", " ").replace("_", " ").title()
+
+    async def health_check(self) -> bool:
+        """Check if fetcher is operational."""
+        try:
+            client = await self.get_client()
+            response = await client.get("https://httpbin.org/get")
+            return response.status_code == 200
+        except Exception as e:
+            logger.warning(f"Web scraper health check failed: {e}")
+            return False

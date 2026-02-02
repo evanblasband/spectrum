@@ -1,1 +1,1 @@
-"""Service implementations (adapters)."""
+"""Service implementations for Spectrum."""
