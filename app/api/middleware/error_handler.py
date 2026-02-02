@@ -1,36 +1,29 @@
 """Global error handling middleware."""
 
-import structlog
-from fastapi import Request, status
+import logging
+from typing import Callable
+
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
-logger = structlog.get_logger()
+logger = logging.getLogger(__name__)
 
 
-async def error_handler_middleware(request: Request, call_next):
-    """Global error handler that catches unhandled exceptions.
+class ErrorHandlerMiddleware(BaseHTTPMiddleware):
+    """Middleware for handling uncaught exceptions."""
 
-    Logs errors and returns consistent error response format.
-    """
-    try:
-        return await call_next(request)
-
-    except Exception as e:
-        # Log the error
-        logger.error(
-            "unhandled_exception",
-            path=request.url.path,
-            method=request.method,
-            error=str(e),
-            exc_info=True,
-        )
-
-        # Return error response
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "success": False,
-                "error": "An unexpected error occurred",
-                "error_code": "INTERNAL_ERROR",
-            },
-        )
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        """Process request and handle any uncaught exceptions."""
+        try:
+            return await call_next(request)
+        except Exception as e:
+            logger.exception("Unhandled exception occurred")
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "error": "Internal server error",
+                    "detail": str(e) if request.app.state.debug else None,
+                },
+            )

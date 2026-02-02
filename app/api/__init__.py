@@ -1,1 +1,1 @@
-"""API layer (routes, middleware, dependencies)."""
+"""API layer for Spectrum."""
