@@ -1,9 +1,6 @@
 version: '3.8'
 
 services:
-  # ===================
-  # API Service
-  # ===================
   api:
     build:
       context: ..
@@ -13,42 +10,27 @@ services:
       - "8000:8000"
     environment:
       - GROQ_API_KEY=${GROQ_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - NEWSAPI_KEY=${NEWSAPI_KEY:-}
-      - GNEWS_API_KEY=${GNEWS_API_KEY:-}
-      - DEFAULT_AI_PROVIDER=${DEFAULT_AI_PROVIDER:-groq}
-      - CACHE_BACKEND=${CACHE_BACKEND:-memory}
-      - REDIS_URL=redis://redis:6379
+      - NEWSAPI_KEY=${NEWSAPI_KEY}
+      - CACHE_BACKEND=memory
       - DEBUG=true
+      - LOG_LEVEL=INFO
     volumes:
-      # Mount source code for hot reload
       - ../app:/app/app
-      - ../tests:/app/tests
-    depends_on:
-      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
 
-  # ===================
-  # Redis (Optional - for production caching)
-  # ===================
-  redis:
-    image: redis:7-alpine
+  web:
+    build:
+      context: ../spectrum-web
+      dockerfile: ../docker/Dockerfile.web
     ports:
-      - "6379:6379"
+      - "5173:5173"
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-volumes:
-  redis_data:
+      - ../spectrum-web/src:/app/src
+    depends_on:
+      - api
+    environment:
+      - VITE_API_URL=http://api:8000
