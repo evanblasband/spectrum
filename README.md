@@ -67,10 +67,21 @@ spectrum/
 ├── docker/                 # Docker configuration
 ├── prd.md                  # Product Requirements Document
 ├── ARCHITECTURE.md         # Backend Architecture Guide
+├── TECH_DECISIONS.md       # Technology Decision Rationale
 └── diagrams.md             # Mermaid diagrams
 ```
 
 ## Documentation
+
+### TECH_DECISIONS.md - Technology Decisions
+
+Explains why each technology was chosen over alternatives:
+
+- **Language & Framework choices** - Python/FastAPI over Node/Django, React over Vue/Svelte
+- **Tooling decisions** - Vite, TypeScript, Tailwind, Zustand, TanStack Query
+- **External services** - Groq AI, NewsAPI, caching strategy
+- **Architecture patterns** - Clean Architecture, Strategy pattern, dependency injection
+- **Tradeoffs** - What we gain and lose with each choice, when to choose differently
 
 ### prd.md - Product Requirements Document
 
