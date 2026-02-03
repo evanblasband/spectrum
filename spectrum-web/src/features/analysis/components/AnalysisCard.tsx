@@ -8,6 +8,26 @@ interface AnalysisCardProps {
   analysis: ArticleAnalysis
 }
 
+function generateBriefSummary(analysis: ArticleAnalysis): string {
+  const { topics, key_points } = analysis
+
+  // Build a brief summary from topic and first key point
+  let summary = `This article covers ${topics.primary_topic.toLowerCase()}`
+
+  if (topics.secondary_topics.length > 0) {
+    summary += `, touching on ${topics.secondary_topics.slice(0, 2).join(' and ').toLowerCase()}`
+  }
+
+  summary += '.'
+
+  // Add the first key point if available
+  if (key_points.length > 0) {
+    summary += ` Key takeaway: ${key_points[0].statement}`
+  }
+
+  return summary
+}
+
 export function AnalysisCard({ analysis }: AnalysisCardProps) {
   const { political_leaning, article_title, source_name, article_url } = analysis
   const label = getLabel(political_leaning.score)
@@ -19,7 +39,7 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
       <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {article_title}
             </h2>
             <a
@@ -30,9 +50,13 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
             >
               {source_name}
             </a>
+            {/* Brief article summary */}
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              {generateBriefSummary(analysis)}
+            </p>
           </div>
           {analysis.cached && (
-            <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+            <span className="flex-shrink-0 text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
               Cached
             </span>
           )}

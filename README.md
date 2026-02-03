@@ -127,8 +127,9 @@ DEBUG=true
 
 - **Article Analysis**: Paste any news article URL to get political spectrum analysis
   - Score from -1 (far left) to +1 (far right)
-  - Confidence indicator
-  - AI-generated reasoning
+  - Confidence indicator with info tooltip explaining methodology
+  - Brief article summary generated from topics and key points
+  - AI-generated reasoning for the political score
   - Topic and keyword extraction
   - Key points identification
 

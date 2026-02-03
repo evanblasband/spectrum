@@ -20,21 +20,36 @@ logger = logging.getLogger(__name__)
 class WebScraper(ArticleFetcherInterface):
     """Web scraper for extracting article content from URLs."""
 
+    # Browser-like User-Agent to avoid 403 blocks
+    DEFAULT_USER_AGENT = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    )
+
     def __init__(
         self,
         timeout: int = 30,
-        user_agent: str = "Spectrum/1.0 (News Analysis Bot)",
+        user_agent: str | None = None,
     ):
         self.timeout = timeout
-        self.user_agent = user_agent
+        self.user_agent = user_agent or self.DEFAULT_USER_AGENT
         self._client: httpx.AsyncClient | None = None
 
     async def get_client(self) -> httpx.AsyncClient:
-        """Get or create HTTP client."""
+        """Get or create HTTP client with browser-like headers."""
         if self._client is None:
             self._client = httpx.AsyncClient(
                 timeout=self.timeout,
-                headers={"User-Agent": self.user_agent},
+                headers={
+                    "User-Agent": self.user_agent,
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.5",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "DNT": "1",
+                    "Connection": "keep-alive",
+                    "Upgrade-Insecure-Requests": "1",
+                },
                 follow_redirects=True,
             )
         return self._client
@@ -55,9 +70,19 @@ class WebScraper(ArticleFetcherInterface):
             response = await client.get(url)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            raise ArticleFetchError(url, f"HTTP {e.response.status_code}")
+            status = e.response.status_code
+            if status == 403:
+                raise ArticleFetchError(
+                    url, "Access denied (403). This site may block automated access."
+                )
+            elif status == 404:
+                raise ArticleFetchError(url, "Article not found (404)")
+            elif status == 429:
+                raise ArticleFetchError(url, "Too many requests. Please try again later.")
+            else:
+                raise ArticleFetchError(url, f"HTTP error {status}")
         except httpx.RequestError as e:
-            raise ArticleFetchError(url, str(e))
+            raise ArticleFetchError(url, f"Connection error: {str(e)}")
 
         html = response.text
         soup = BeautifulSoup(html, "lxml")
