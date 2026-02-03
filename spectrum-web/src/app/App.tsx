@@ -5,6 +5,7 @@ import { useAnalyzeArticle } from '@/features/analysis/hooks/useAnalyzeArticle'
 import { useFindRelated } from '@/features/related-articles/hooks/useFindRelated'
 import { RelatedArticlesList } from '@/features/related-articles/components/RelatedArticlesList'
 import { useComparisonStore } from '@/stores/useComparisonStore'
+import { useSearchHistory } from '@/stores/useSearchHistory'
 import { ComparisonView } from '@/features/comparison/components/ComparisonView'
 import type { ArticleAnalysis } from '@/lib/api/client'
 
@@ -18,12 +19,32 @@ function App() {
   const { selectedArticles, addArticle, removeArticle, clearArticles } = useComparisonStore()
   const [showComparison, setShowComparison] = useState(false)
 
+  // Search history
+  const { addToHistory } = useSearchHistory()
+
   const handleAnalyze = (inputUrl: string) => {
     setUrl(inputUrl)
     setShowComparison(false)
     analyze(inputUrl, {
-      onSuccess: () => {
+      onSuccess: (response) => {
         setAnalyzedUrl(inputUrl)
+        // Add successful analysis to history
+        addToHistory({
+          url: inputUrl,
+          title: response.data?.article_title || null,
+          source: response.data?.source_name || null,
+          success: true,
+        })
+      },
+      onError: (err) => {
+        // Add failed analysis to history
+        addToHistory({
+          url: inputUrl,
+          title: null,
+          source: null,
+          success: false,
+          errorMessage: err instanceof Error ? err.message : 'Analysis failed',
+        })
       }
     })
   }

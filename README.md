@@ -137,6 +137,12 @@ DEBUG=true
   - Uses NewsAPI to search by extracted keywords
   - One-click analyze for any related article
 
+- **Search History**: Quick access to previously analyzed articles
+  - Shows last 10 articles searched (persisted in localStorage)
+  - Visual success/failure indicators
+  - Click to re-analyze, or remove individual entries
+  - Clear all history option
+
 - **Article Comparison**: Compare multiple articles side-by-side
   - Add analyzed articles to comparison list
   - Visual spectrum showing all articles' positions

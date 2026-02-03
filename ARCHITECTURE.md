@@ -149,7 +149,8 @@ spectrum-web/
 │   │       └── Disclaimer.tsx
 │   │
 │   ├── stores/
-│   │   └── useComparisonStore.ts  # Zustand store for comparison
+│   │   ├── useComparisonStore.ts  # Zustand store for article comparison
+│   │   └── useSearchHistory.ts    # Zustand store for search history (localStorage persisted)
 │   │
 │   └── lib/
 │       └── api/
