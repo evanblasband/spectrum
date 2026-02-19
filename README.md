@@ -208,9 +208,11 @@ DEBUG=true
 ### Not Yet Implemented
 
 - User accounts and saved history
-- Chrome browser extension
+- Chrome browser extension (would solve JavaScript rendering issues - see note below)
 - Redis caching (uses in-memory cache)
 - Advanced comparison (agreements/disagreements extraction)
+
+> **Browser Extension Note:** A browser extension would solve the "partial support" JavaScript rendering issue entirely. The extension runs after all JS has executed, giving access to the fully-rendered DOM. It would also work for paywalled sites the user subscribes to. See TECH_DECISIONS.md for details.
 
 ### Roadmap / Planned Work
 

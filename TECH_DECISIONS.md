@@ -500,6 +500,27 @@ The scraper maintains these lists and provides clear error messages for blocked 
 - Large-scale scraping → Scrapy for better scheduling, throttling
 - Need all sources reliably → Consider news API that provides full text (paid services)
 
+### Future: Browser Extension Approach
+
+A browser extension would fundamentally solve the JavaScript rendering limitation:
+
+| Aspect | Server-side Scraper | Browser Extension |
+|--------|---------------------|-------------------|
+| JavaScript content | Cannot access | Full rendered DOM |
+| Bot detection | Often blocked | User is legitimate visitor |
+| Paywalled sites | Blocked | Works with user's subscription |
+| User friction | Just paste URL | Must install extension, be on page |
+| Architecture | API fetches URL | Extension sends extracted content |
+
+**How it would work:**
+1. User navigates to article in browser
+2. Clicks extension or uses keyboard shortcut
+3. Extension extracts content from live DOM (`document.querySelector('article')` etc.)
+4. Sends extracted content (not URL) to backend API
+5. API analyzes content and returns results
+
+This would eliminate the "partial support" and "blocked" source categories entirely, as the extension accesses whatever the user can see. Trade-off is higher user friction (extension install, must be on page).
+
 ---
 
 ## 12. HTTP Client
