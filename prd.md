@@ -332,14 +332,16 @@ spectrum-web/
 ## Verification & Testing
 
 ### Manual Testing
-1. Analyze article from a known left-leaning source (e.g., HuffPost)
-2. Analyze article from a known right-leaning source (e.g., Fox News)
-3. Analyze article from a known center source (e.g., AP News)
+1. Analyze article from a known left-leaning source (e.g., The Guardian - fully supported)
+2. Analyze article from a known right-leaning source (e.g., Fox News - fully supported)
+3. Analyze article from a known center source (e.g., BBC - fully supported)
 4. Verify spectrum positions match expected ranges
 5. Test related article discovery on a trending topic
 6. Test comparison between two articles on same topic
 7. Verify mobile responsiveness on phone viewport
 8. Test error states (invalid URL, paywall, network error)
+
+**Note on Source Compatibility:** Some news sites block automated access. For reliable testing, use fully supported sources: NPR, BBC, CNN, Fox News, Breitbart, LA Times, The Guardian. Sites like HuffPost, AP News, and Vox have partial support (JavaScript-heavy). Sites like NY Times, Washington Post, and WSJ are blocked. See README.md for the full compatibility list.
 
 ### Automated Testing
 1. Unit tests for political analysis score calculation
@@ -349,12 +351,14 @@ spectrum-web/
 5. Component tests for SpectrumScale positioning
 
 ### Calibration Checks
-| Source | Expected Range | Purpose |
-|--------|----------------|---------|
-| AP News | -0.15 to 0.15 | Verify center detection |
-| The Economist | 0.1 to 0.4 | Verify center-right detection |
-| Mother Jones | -0.7 to -0.4 | Verify left detection |
-| National Review | 0.4 to 0.7 | Verify right detection |
+| Source | Expected Range | Purpose | Compatibility |
+|--------|----------------|---------|---------------|
+| BBC | -0.15 to 0.15 | Verify center detection | Fully supported |
+| The Guardian | -0.3 to 0.0 | Verify center-left detection | Fully supported |
+| Fox News | 0.3 to 0.6 | Verify right detection | Fully supported |
+| Breitbart | 0.5 to 0.8 | Verify far-right detection | Fully supported |
+
+*Note: Original calibration sources (AP News, Mother Jones, National Review) have partial support due to JavaScript-heavy sites. The above alternatives provide reliable, repeatable testing.*
 
 ---
 

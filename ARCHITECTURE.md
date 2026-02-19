@@ -292,10 +292,12 @@ paths:
 ### Service Responsibilities
 
 #### ArticleFetcher Service
-- Fetches article content from URL
-- Extracts title, content, metadata
-- Handles paywalls gracefully (returns partial content)
-- Normalizes text for analysis
+- Fetches article content from URL using HTTP/2 (required by many news sites)
+- Extracts title, content, author, and publication date
+- Uses multiple content extraction strategies (`<article>`, `<main>`, class patterns)
+- Maintains lists of supported, partially supported, and blocked news sources
+- Provides clear error messages for known blocked sites (e.g., NY Times, Washington Post)
+- See README.md for full source compatibility list
 
 #### AIProvider Service (Strategy Pattern)
 - Political leaning analysis (-1 to 1 score)

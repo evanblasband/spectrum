@@ -22,6 +22,16 @@ This section tracks changes to technology decisions over time. Each entry includ
 
 ### Change Log
 
+#### 2026-02-18 - HTTP Client - HTTP/2 Required for News Sites
+**Previous**: HTTP/1.1 requests (httpx default)
+**New**: HTTP/2 enabled with `h2` package
+**Trigger**: Many news sites (Fox News, NPR, etc.) returning 404 errors on valid articles
+**Reasoning**: Modern news sites often require HTTP/2 and return 404 (not 403) for HTTP/1.1 requests. This was causing widespread fetch failures that appeared to be "article not found" rather than protocol issues.
+**Migration notes**: Added `h2>=4.1.0` to requirements.txt, enabled `http2=True` in httpx.AsyncClient
+**Lessons**: When scraping returns unexpected 404s on valid URLs, check protocol requirements. The error code can be misleading - sites may return 404 instead of 426 (Upgrade Required).
+
+---
+
 #### 2026-02-03 - Initial Architecture
 **Status**: Baseline established
 
@@ -457,53 +467,92 @@ The cache interface is abstracted, so switching to Redis requires:
 ```python
 # Priority order for finding article content:
 1. <article> tag
-2. Divs with class matching "article-body", "post-content", etc.
-3. All <p> tags with substantial text (>50 chars)
+2. <main> tag (many modern sites use this)
+3. Divs/sections with class matching patterns:
+   - "article-body", "article-content", "article-text"
+   - "post-body", "post-content", "entry-body", "entry-content"
+   - "story-body", "story-content", "rich-text"
+4. Elements with itemprop="articleBody"
+5. All <p> tags with substantial text (>50 chars)
 ```
 
+### Source Compatibility
+
+Not all news sites allow automated access. We categorize sources into three tiers:
+
+| Category | Examples | Notes |
+|----------|----------|-------|
+| **Fully Supported** | NPR, BBC, CNN, Fox News, Guardian | Reliable extraction, static HTML |
+| **Partial Support** | HuffPost, Vox, AP News, Slate | JavaScript-heavy, inconsistent results |
+| **Blocked** | NY Times, Washington Post, WSJ, Reuters | Actively block scrapers (403/paywall) |
+
+The scraper maintains these lists and provides clear error messages for blocked sites rather than confusing fetch failures.
+
 ### Tradeoffs
-- **JavaScript content**: Can't extract content rendered by JavaScript
+- **JavaScript content**: Can't extract content rendered by JavaScript (main limitation for "partial support" sites)
 - **Manual selectors**: Need to handle different site structures
 - **Maintenance**: Sites change their HTML, breaking extraction
+- **Source variability**: Some major sources actively block scraping
 
 ### When to choose differently
-- JavaScript-heavy sites → Playwright or Puppeteer
+- JavaScript-heavy sites → Playwright or Puppeteer (but adds significant complexity)
 - Need structured article extraction → newspaper3k or trafilatura as starting point
 - Large-scale scraping → Scrapy for better scheduling, throttling
+- Need all sources reliably → Consider news API that provides full text (paid services)
 
 ---
 
 ## 12. HTTP Client
 
-### Decision: httpx (async)
+### Decision: httpx (async) with HTTP/2
 
 ### Why httpx over alternatives?
 
 | Library | Consideration |
 |---------|---------------|
 | **httpx** ✓ | Async support, requests-like API, HTTP/2, modern |
-| requests | Synchronous only, would block async FastAPI |
-| aiohttp | Async but different API, less intuitive |
+| requests | Synchronous only, would block async FastAPI, no HTTP/2 |
+| aiohttp | Async but different API, less intuitive, HTTP/2 support limited |
 | urllib3 | Low-level, more manual work |
 
 ### Key Benefits for This Project
 - **Async native**: Works with FastAPI's async request handlers
+- **HTTP/2 support**: Critical for modern news sites (many return 404 for HTTP/1.1)
 - **Familiar API**: Same interface as `requests` (easy to learn)
 - **Connection pooling**: Reuses connections for performance
 - **Timeout handling**: Clean timeout configuration
 
+### HTTP/2 Requirement
+
+**Important**: Many modern news sites require HTTP/2 and return misleading 404 errors for HTTP/1.1 requests. This is not a "nice to have" - it's required for reliable scraping.
+
+```python
+# Requires h2 package: pip install h2
+async with httpx.AsyncClient(http2=True) as client:
+    response = await client.get(url)  # Uses HTTP/2 when supported
+```
+
 ### Usage Pattern
 ```python
-async with httpx.AsyncClient() as client:
-    response = await client.get(url)  # Non-blocking
+# Full configuration for news scraping
+client = httpx.AsyncClient(
+    timeout=30,
+    headers={
+        "User-Agent": "Mozilla/5.0 ...",  # Browser-like UA
+        "Accept": "text/html,...",
+    },
+    follow_redirects=True,
+    http2=True,  # Required for many news sites
+)
 ```
 
 ### Tradeoffs
 - **Newer library**: Less battle-tested than requests (though now mature)
 - **Async complexity**: Must use `await`, can't use in sync contexts
+- **HTTP/2 dependency**: Requires `h2` package for HTTP/2 support
 
 ### When to choose differently
-- Sync-only codebase → requests
+- Sync-only codebase → requests (but HTTP/2 not available)
 - Need WebSocket support → aiohttp
 - Maximum performance → Custom solution with connection pooling tuning
 
