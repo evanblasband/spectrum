@@ -117,7 +117,36 @@ The architecture document provides detailed technical design:
 | `/api/v1/health` | GET | Health check |
 | `/api/v1/articles/analyze` | POST | Analyze article political leaning |
 | `/api/v1/articles/related` | POST | Find related articles |
+| `/api/v1/articles/sources` | GET | Get supported/blocked sources list |
 | `/api/v1/comparisons` | POST | Compare multiple articles |
+
+## News Source Compatibility
+
+Not all news websites allow automated access. Here's what works and what doesn't:
+
+### Supported Sources (25+)
+
+| Category | Sources |
+|----------|---------|
+| **Left-leaning** | NPR, The Guardian, HuffPost, Vox, Mother Jones, Slate, The Atlantic, MSNBC |
+| **Center** | AP News, BBC, PBS, USA Today, ABC News, CBS News, NBC News |
+| **Right-leaning** | Fox News, National Review, Breitbart, NY Post, Washington Examiner, Daily Wire |
+| **Major Papers** | NY Times, LA Times, Chicago Tribune, CNN |
+
+### Blocked Sources
+
+These sites actively block web scrapers and will not work:
+
+| Source | Reason |
+|--------|--------|
+| Washington Post | Aggressive bot protection |
+| Wall Street Journal | Requires authentication/subscription |
+| Reuters | Requires authentication |
+| Politico | Blocks automated access (403) |
+| The Hill | Blocks automated access (403) |
+| The Federalist | Blocks automated access (403) |
+
+> **Note**: Source compatibility may change as websites update their policies. The app will show a clear error message when a blocked source is detected.
 
 ## Environment Variables
 

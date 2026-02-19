@@ -1,5 +1,7 @@
 import { useState, FormEvent, useRef, useEffect } from 'react'
 import { useSearchHistory, type SearchHistoryItem } from '@/stores/useSearchHistory'
+import { useSourceCompatibility } from '@/hooks/useSourceCompatibility'
+import { SourceInfoPopover } from '@/components/common/SourceInfoPopover'
 
 interface UrlInputFormProps {
   onSubmit: (url: string) => void
@@ -19,6 +21,7 @@ export function UrlInputForm({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const { history, removeFromHistory, clearHistory } = useSearchHistory()
+  const { data: sourceData } = useSourceCompatibility()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -102,17 +105,28 @@ export function UrlInputForm({
           <label htmlFor="url-input" className="sr-only">
             Article URL
           </label>
-          <input
-            ref={inputRef}
-            id="url-input"
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onFocus={() => history.length > 0 && setShowDropdown(true)}
-            placeholder="Paste article URL here..."
-            disabled={disabled}
-            className={inputClasses}
-          />
+          <div className="relative flex items-center">
+            <input
+              ref={inputRef}
+              id="url-input"
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onFocus={() => history.length > 0 && setShowDropdown(true)}
+              placeholder="Paste article URL here..."
+              disabled={disabled}
+              className={`${inputClasses} pr-10`}
+            />
+            {/* Source Info Popover */}
+            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              {sourceData && (
+                <SourceInfoPopover
+                  supported={sourceData.supported}
+                  blocked={sourceData.blocked}
+                />
+              )}
+            </div>
+          </div>
 
           {/* Search History Dropdown */}
           {showDropdown && history.length > 0 && (

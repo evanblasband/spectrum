@@ -8,7 +8,7 @@ from tenacity import RetryError
 
 from app.api.deps import get_analyze_use_case, get_find_related_use_case
 from app.core.interfaces.article_fetcher import ArticleFetchError
-from app.services.fetchers.web_scraper import RetryableError
+from app.services.fetchers.web_scraper import RetryableError, SUPPORTED_SITES, BLOCKED_SITES
 from app.core.use_cases.analyze_article import AnalyzeArticleUseCase
 from app.core.use_cases.find_related import FindRelatedUseCase
 from app.schemas.requests import AnalyzeArticleRequest, FindRelatedRequest
@@ -126,3 +126,20 @@ async def find_related_articles(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Failed to find related articles: {str(e)}",
         )
+
+
+@router.get("/sources")
+async def get_source_compatibility() -> dict:
+    """
+    Get list of supported and blocked news sources.
+
+    Returns information about which news sources work with the scraper
+    and which are known to block automated access.
+    """
+    return {
+        "supported": SUPPORTED_SITES,
+        "blocked": [
+            {"domain": domain, "reason": reason}
+            for domain, reason in BLOCKED_SITES.items()
+        ],
+    }

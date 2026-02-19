@@ -19,6 +19,32 @@ class RetryableError(Exception):
     """Error that should be retried (e.g., timeouts, 5xx errors)."""
     pass
 
+
+# Sites known to block automated access
+BLOCKED_SITES = {
+    "washingtonpost.com": "Washington Post uses aggressive bot protection",
+    "wsj.com": "Wall Street Journal requires authentication",
+    "reuters.com": "Reuters requires authentication",
+    "politico.com": "Politico blocks automated access",
+    "thehill.com": "The Hill blocks automated access",
+    "thefederalist.com": "The Federalist blocks automated access",
+}
+
+# Sites confirmed to work
+SUPPORTED_SITES = [
+    # Left-leaning
+    "npr.org", "theguardian.com", "huffpost.com", "vox.com",
+    "motherjones.com", "slate.com", "theatlantic.com", "msnbc.com",
+    # Center
+    "apnews.com", "bbc.com", "bbc.co.uk", "pbs.org", "usatoday.com",
+    "abcnews.go.com", "cbsnews.com", "nbcnews.com",
+    # Right-leaning
+    "foxnews.com", "nationalreview.com", "breitbart.com", "nypost.com",
+    "washingtonexaminer.com", "dailywire.com",
+    # Major papers
+    "nytimes.com", "latimes.com", "chicagotribune.com", "cnn.com",
+]
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,6 +92,19 @@ class WebScraper(ArticleFetcherInterface):
             await self._client.aclose()
             self._client = None
 
+    def _get_domain(self, url: str) -> str:
+        """Extract domain from URL."""
+        parsed = urlparse(url)
+        domain = parsed.netloc.replace("www.", "")
+        return domain
+
+    def _check_blocked_site(self, url: str) -> None:
+        """Check if URL is from a known blocked site and raise appropriate error."""
+        domain = self._get_domain(url)
+        for blocked_domain, reason in BLOCKED_SITES.items():
+            if domain == blocked_domain or domain.endswith("." + blocked_domain):
+                raise ArticleFetchError(url, f"{reason}. This source is not supported.")
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=10),
@@ -75,6 +114,9 @@ class WebScraper(ArticleFetcherInterface):
     async def fetch(self, url: str) -> Article:
         """Fetch and parse article content from URL."""
         logger.info(f"Fetching article from {url}")
+
+        # Check for known blocked sites first
+        self._check_blocked_site(url)
 
         try:
             client = await self.get_client()
