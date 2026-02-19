@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from tenacity import RetryError
 
 from app.api.deps import get_analyze_use_case, get_find_related_use_case
+from app.api.errors import raise_structured_error
+from app.core.errors import ErrorCode
 from app.core.interfaces.article_fetcher import ArticleFetchError
 from app.services.fetchers.web_scraper import RetryableError, SUPPORTED_SITES, BLOCKED_SITES, PARTIAL_SUPPORT_SITES
 from app.core.use_cases.analyze_article import AnalyzeArticleUseCase
@@ -51,29 +53,31 @@ async def analyze_article(
 
     except ArticleFetchError as e:
         logger.warning(f"Failed to fetch article: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Could not fetch article: {e.message}",
+        raise_structured_error(
+            code=e.code,
+            message=e.message,
+            details={"url": e.url, **(e.details or {})},
         )
     except (RetryableError, RetryError) as e:
         # Retries exhausted for connection/timeout errors
         original_error = e.__cause__ if isinstance(e, RetryError) else e
         logger.warning(f"Failed to fetch article after retries: {original_error}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Could not reach the article URL after multiple attempts. Please check the URL and try again.",
+        raise_structured_error(
+            code=ErrorCode.NETWORK_ERROR,
+            message="Could not reach the article URL after multiple attempts.",
+            details={"original_error": str(original_error)},
         )
     except ValueError as e:
         logger.warning(f"Invalid request: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
+        raise_structured_error(
+            code=ErrorCode.VALIDATION,
+            message=str(e),
         )
     except Exception as e:
         logger.exception(f"Analysis failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Analysis failed: {str(e)}",
+        raise_structured_error(
+            code=ErrorCode.AI_ERROR,
+            message=f"Analysis failed: {str(e)}",
         )
 
 

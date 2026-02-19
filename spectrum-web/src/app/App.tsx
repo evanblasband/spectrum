@@ -7,6 +7,7 @@ import { RelatedArticlesList } from '@/features/related-articles/components/Rela
 import { useComparisonStore } from '@/stores/useComparisonStore'
 import { useSearchHistory } from '@/stores/useSearchHistory'
 import { ComparisonView } from '@/features/comparison/components/ComparisonView'
+import { ErrorMessage } from '@/components/common/ErrorMessage'
 import type { ArticleAnalysis } from '@/lib/api/client'
 
 function App() {
@@ -142,17 +143,11 @@ function App() {
 
         {/* Error State */}
         {error && !showComparison && (
-          <div className="mb-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <p className="text-red-700 dark:text-red-400">
-              {error instanceof Error ? error.message : 'An error occurred'}
-            </p>
-            <button
-              onClick={handleReset}
-              className="mt-2 text-sm text-red-600 dark:text-red-400 underline"
-            >
-              Try again
-            </button>
-          </div>
+          <ErrorMessage
+            error={error}
+            onRetry={handleReset}
+            className="mb-8"
+          />
         )}
 
         {/* Loading State */}

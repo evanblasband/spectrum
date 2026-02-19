@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from app.core.entities.article import Article, ArticleSource
+from app.core.errors import ErrorCode
 from app.core.interfaces.article_fetcher import ArticleFetchError, ArticleFetcherInterface
 
 
@@ -124,7 +125,12 @@ class WebScraper(ArticleFetcherInterface):
         domain = self._get_domain(url)
         for blocked_domain, reason in BLOCKED_SITES.items():
             if domain == blocked_domain or domain.endswith("." + blocked_domain):
-                raise ArticleFetchError(url, f"{reason}. This source is not supported.")
+                raise ArticleFetchError(
+                    url,
+                    f"{reason}. This source is not supported.",
+                    code=ErrorCode.BLOCKED_SOURCE,
+                    details={"domain": blocked_domain},
+                )
 
     @retry(
         stop=stop_after_attempt(3),
@@ -148,14 +154,28 @@ class WebScraper(ArticleFetcherInterface):
             # Don't retry client errors (4xx) - they won't recover
             if status_code == 403:
                 raise ArticleFetchError(
-                    url, "Access denied (403). This site may block automated access."
+                    url,
+                    "Access denied (403). This site may block automated access.",
+                    code=ErrorCode.BLOCKED_SOURCE,
                 )
             elif status_code == 404:
-                raise ArticleFetchError(url, "Article not found (404). The URL may be incorrect or the article was removed.")
+                raise ArticleFetchError(
+                    url,
+                    "Article not found (404). The URL may be incorrect or the article was removed.",
+                    code=ErrorCode.NOT_FOUND,
+                )
             elif status_code == 429:
-                raise ArticleFetchError(url, "Too many requests. Please try again later.")
+                raise ArticleFetchError(
+                    url,
+                    "Too many requests. Please try again later.",
+                    code=ErrorCode.RATE_LIMITED,
+                )
             elif 400 <= status_code < 500:
-                raise ArticleFetchError(url, f"HTTP error {status_code}")
+                raise ArticleFetchError(
+                    url,
+                    f"HTTP error {status_code}",
+                    code=ErrorCode.NETWORK_ERROR,
+                )
             else:
                 # Server errors (5xx) are retriable
                 raise RetryableError(f"HTTP error {status_code}")
@@ -176,7 +196,11 @@ class WebScraper(ArticleFetcherInterface):
         published_at = self._extract_published_date(soup)
 
         if not content or len(content) < 100:
-            raise ArticleFetchError(url, "Could not extract article content")
+            raise ArticleFetchError(
+                url,
+                "Could not extract article content",
+                code=ErrorCode.CONTENT_EXTRACTION,
+            )
 
         # Parse domain for source info
         parsed_url = urlparse(url)

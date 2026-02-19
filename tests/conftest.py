@@ -4,7 +4,7 @@ import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock
 
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 
 from app.main import app
 from app.core.entities.article import Article, ArticleSource
@@ -28,7 +28,8 @@ def anyio_backend():
 @pytest.fixture
 async def client():
     """Create async test client."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 

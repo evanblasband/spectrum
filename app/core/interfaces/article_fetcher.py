@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 
 from app.core.entities.article import Article
+from app.core.errors import ErrorCode
 
 
 class ArticleFetcherInterface(ABC):
@@ -33,7 +34,15 @@ class ArticleFetcherInterface(ABC):
 class ArticleFetchError(Exception):
     """Exception raised when article fetching fails."""
 
-    def __init__(self, url: str, message: str):
+    def __init__(
+        self,
+        url: str,
+        message: str,
+        code: ErrorCode = ErrorCode.CONTENT_EXTRACTION,
+        details: dict | None = None,
+    ):
         self.url = url
         self.message = message
+        self.code = code
+        self.details = details
         super().__init__(f"Failed to fetch {url}: {message}")
