@@ -124,29 +124,45 @@ The architecture document provides detailed technical design:
 
 Not all news websites allow automated access. Here's what works and what doesn't:
 
-### Supported Sources (25+)
+### Fully Supported Sources
 
-| Category | Sources |
-|----------|---------|
-| **Left-leaning** | NPR, The Guardian, HuffPost, Vox, Mother Jones, Slate, The Atlantic, MSNBC |
-| **Center** | AP News, BBC, PBS, USA Today, ABC News, CBS News, NBC News |
-| **Right-leaning** | Fox News, National Review, Breitbart, NY Post, Washington Examiner, Daily Wire |
-| **Major Papers** | NY Times, LA Times, Chicago Tribune, CNN |
+These sources work reliably:
 
-### Blocked Sources
+| Source | Notes |
+|--------|-------|
+| NPR | Consistent article extraction |
+| BBC | Works well for both .com and .co.uk |
+| CNN | Works well, sometimes large content |
+| Fox News | Reliable |
+| Breitbart | Reliable |
+| LA Times | Reliable |
+| The Guardian | Reliable |
 
-These sites actively block web scrapers and will not work:
+### Partial Support
+
+These sources may work but have inconsistent results (JavaScript-heavy sites, content extraction issues):
+
+| Sources |
+|---------|
+| HuffPost, Vox, Mother Jones, Slate, The Atlantic, MSNBC |
+| AP News, PBS, USA Today, ABC News, CBS News, NBC News |
+| National Review, NY Post, Washington Examiner, Daily Wire, Chicago Tribune |
+
+### Not Supported
+
+These sites actively block web scrapers:
 
 | Source | Reason |
 |--------|--------|
+| NY Times | Blocks automated access (403) |
 | Washington Post | Aggressive bot protection |
-| Wall Street Journal | Requires authentication/subscription |
+| Wall Street Journal | Requires subscription |
 | Reuters | Requires authentication |
-| Politico | Blocks automated access (403) |
-| The Hill | Blocks automated access (403) |
-| The Federalist | Blocks automated access (403) |
+| Politico | Blocks automated access |
+| The Hill | Blocks automated access |
+| The Federalist | Blocks automated access |
 
-> **Note**: Source compatibility may change as websites update their policies. The app will show a clear error message when a blocked source is detected.
+> **Note**: Source compatibility may change as websites update their policies. The app shows source compatibility info via the (i) icon next to the URL input.
 
 ## Environment Variables
 

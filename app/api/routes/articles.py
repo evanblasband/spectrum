@@ -8,7 +8,7 @@ from tenacity import RetryError
 
 from app.api.deps import get_analyze_use_case, get_find_related_use_case
 from app.core.interfaces.article_fetcher import ArticleFetchError
-from app.services.fetchers.web_scraper import RetryableError, SUPPORTED_SITES, BLOCKED_SITES
+from app.services.fetchers.web_scraper import RetryableError, SUPPORTED_SITES, BLOCKED_SITES, PARTIAL_SUPPORT_SITES
 from app.core.use_cases.analyze_article import AnalyzeArticleUseCase
 from app.core.use_cases.find_related import FindRelatedUseCase
 from app.schemas.requests import AnalyzeArticleRequest, FindRelatedRequest
@@ -138,6 +138,7 @@ async def get_source_compatibility() -> dict:
     """
     return {
         "supported": SUPPORTED_SITES,
+        "partial": PARTIAL_SUPPORT_SITES,
         "blocked": [
             {"domain": domain, "reason": reason}
             for domain, reason in BLOCKED_SITES.items()

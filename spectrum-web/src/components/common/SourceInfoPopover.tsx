@@ -7,10 +7,11 @@ interface BlockedSource {
 
 interface SourceInfoPopoverProps {
   supported: string[]
+  partial?: string[]
   blocked: BlockedSource[]
 }
 
-export function SourceInfoPopover({ supported, blocked }: SourceInfoPopoverProps) {
+export function SourceInfoPopover({ supported, partial = [], blocked }: SourceInfoPopoverProps) {
   const [isOpen, setIsOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -44,37 +45,35 @@ export function SourceInfoPopover({ supported, blocked }: SourceInfoPopoverProps
 
   // Map domains to proper display names
   const DOMAIN_NAMES: Record<string, string> = {
-    // Left-leaning
+    // Fully supported
     'npr.org': 'NPR',
+    'bbc.com': 'BBC',
+    'bbc.co.uk': 'BBC UK',
+    'cnn.com': 'CNN',
+    'foxnews.com': 'Fox News',
+    'breitbart.com': 'Breitbart',
+    'latimes.com': 'LA Times',
     'theguardian.com': 'The Guardian',
+    // Partial support
     'huffpost.com': 'HuffPost',
     'vox.com': 'Vox',
     'motherjones.com': 'Mother Jones',
     'slate.com': 'Slate',
     'theatlantic.com': 'The Atlantic',
     'msnbc.com': 'MSNBC',
-    // Center
     'apnews.com': 'AP News',
-    'bbc.com': 'BBC',
-    'bbc.co.uk': 'BBC',
     'pbs.org': 'PBS',
     'usatoday.com': 'USA Today',
     'abcnews.go.com': 'ABC News',
     'cbsnews.com': 'CBS News',
     'nbcnews.com': 'NBC News',
-    // Right-leaning
-    'foxnews.com': 'Fox News',
     'nationalreview.com': 'National Review',
-    'breitbart.com': 'Breitbart',
     'nypost.com': 'NY Post',
-    'washingtonexaminer.com': 'Washington Examiner',
+    'washingtonexaminer.com': 'Wash. Examiner',
     'dailywire.com': 'Daily Wire',
-    // Major papers
-    'nytimes.com': 'NY Times',
-    'latimes.com': 'LA Times',
     'chicagotribune.com': 'Chicago Tribune',
-    'cnn.com': 'CNN',
     // Blocked sites
+    'nytimes.com': 'NY Times',
     'washingtonpost.com': 'Washington Post',
     'wsj.com': 'Wall Street Journal',
     'reuters.com': 'Reuters',
@@ -148,27 +147,59 @@ export function SourceInfoPopover({ supported, blocked }: SourceInfoPopoverProps
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700" />
+            {/* Partial Support */}
+            {partial.length > 0 && (
+              <>
+                <div className="border-t border-gray-200 dark:border-gray-700" />
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      May Work ({partial.length})
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {partial.map((domain) => (
+                      <span
+                        key={domain}
+                        className="inline-block px-2 py-0.5 text-xs bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded"
+                      >
+                        {formatDomain(domain)}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                    These sites have inconsistent results.
+                  </p>
+                </div>
+              </>
+            )}
 
             {/* Blocked Sources */}
+            <div className="border-t border-gray-200 dark:border-gray-700" />
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                     clipRule="evenodd"
                   />
                 </svg>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  Known Issues ({blocked.length})
+                  Not Supported ({blocked.length})
                 </span>
               </div>
               <div className="space-y-1.5">
-                {blocked.map(({ domain, reason }) => (
+                {blocked.map(({ domain }) => (
                   <div key={domain} className="text-xs text-gray-600 dark:text-gray-400">
-                    <span className="font-medium text-amber-700 dark:text-amber-400">
+                    <span className="font-medium text-red-700 dark:text-red-400">
                       {formatDomain(domain)}
                     </span>
                   </div>

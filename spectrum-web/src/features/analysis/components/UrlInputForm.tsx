@@ -122,6 +122,7 @@ export function UrlInputForm({
               {sourceData && (
                 <SourceInfoPopover
                   supported={sourceData.supported}
+                  partial={sourceData.partial}
                   blocked={sourceData.blocked}
                 />
               )}
@@ -221,34 +222,34 @@ export function UrlInputForm({
         </button>
       </div>
 
-      {/* Example URLs */}
+      {/* Example URLs - only fully supported sources */}
       <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
         <span>Try: </span>
         <button
           type="button"
-          onClick={() => setUrl('https://apnews.com')}
+          onClick={() => setUrl('https://www.bbc.com/news')}
           className="text-violet-600 hover:underline"
           disabled={disabled}
         >
-          AP News
+          BBC
         </button>
         {' \u2022 '}
         <button
           type="button"
-          onClick={() => setUrl('https://www.nytimes.com')}
+          onClick={() => setUrl('https://www.cnn.com/politics')}
           className="text-violet-600 hover:underline"
           disabled={disabled}
         >
-          NY Times
+          CNN
         </button>
         {' \u2022 '}
         <button
           type="button"
-          onClick={() => setUrl('https://www.foxnews.com')}
+          onClick={() => setUrl('https://www.npr.org/sections/politics/')}
           className="text-violet-600 hover:underline"
           disabled={disabled}
         >
-          Fox News
+          NPR
         </button>
       </div>
     </form>

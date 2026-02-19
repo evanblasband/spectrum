@@ -20,29 +20,50 @@ class RetryableError(Exception):
     pass
 
 
-# Sites known to block automated access
+# Sites known to block automated access or require authentication
 BLOCKED_SITES = {
     "washingtonpost.com": "Washington Post uses aggressive bot protection",
-    "wsj.com": "Wall Street Journal requires authentication",
+    "wsj.com": "Wall Street Journal requires subscription",
     "reuters.com": "Reuters requires authentication",
     "politico.com": "Politico blocks automated access",
     "thehill.com": "The Hill blocks automated access",
     "thefederalist.com": "The Federalist blocks automated access",
+    "nytimes.com": "NY Times blocks automated access",
 }
 
-# Sites confirmed to work
+# Sites confirmed to work reliably
 SUPPORTED_SITES = [
-    # Left-leaning
-    "npr.org", "theguardian.com", "huffpost.com", "vox.com",
-    "motherjones.com", "slate.com", "theatlantic.com", "msnbc.com",
-    # Center
-    "apnews.com", "bbc.com", "bbc.co.uk", "pbs.org", "usatoday.com",
-    "abcnews.go.com", "cbsnews.com", "nbcnews.com",
-    # Right-leaning
-    "foxnews.com", "nationalreview.com", "breitbart.com", "nypost.com",
-    "washingtonexaminer.com", "dailywire.com",
-    # Major papers
-    "nytimes.com", "latimes.com", "chicagotribune.com", "cnn.com",
+    # Confirmed working
+    "npr.org",
+    "bbc.com",
+    "bbc.co.uk",
+    "cnn.com",
+    "foxnews.com",
+    "breitbart.com",
+    "latimes.com",
+    "theguardian.com",
+]
+
+# Sites that may work but have inconsistent results
+# (JavaScript-heavy, content extraction issues, or intermittent blocks)
+PARTIAL_SUPPORT_SITES = [
+    "huffpost.com",
+    "vox.com",
+    "motherjones.com",
+    "slate.com",
+    "theatlantic.com",
+    "msnbc.com",
+    "apnews.com",
+    "pbs.org",
+    "usatoday.com",
+    "abcnews.go.com",
+    "cbsnews.com",
+    "nbcnews.com",
+    "nationalreview.com",
+    "nypost.com",
+    "washingtonexaminer.com",
+    "dailywire.com",
+    "chicagotribune.com",
 ]
 
 logger = logging.getLogger(__name__)
@@ -201,8 +222,8 @@ class WebScraper(ArticleFetcherInterface):
 
     def _extract_content(self, soup: BeautifulSoup) -> str:
         """Extract main article content."""
-        # Remove unwanted elements
-        for tag in soup(["script", "style", "nav", "header", "footer", "aside", "ad"]):
+        # Remove unwanted elements (but NOT article or main)
+        for tag in soup(["script", "style", "nav", "aside", "ad", "noscript"]):
             tag.decompose()
 
         # Try article tag first
@@ -210,22 +231,37 @@ class WebScraper(ArticleFetcherInterface):
         if article:
             paragraphs = article.find_all("p")
             if paragraphs:
-                return self._clean_text("\n\n".join(p.get_text() for p in paragraphs))
+                content = self._clean_text("\n\n".join(p.get_text() for p in paragraphs))
+                if len(content) >= 100:
+                    return content
 
-        # Try common content containers
+        # Try main tag (many modern sites use this)
+        main = soup.find("main")
+        if main:
+            paragraphs = main.find_all("p")
+            if paragraphs:
+                content = self._clean_text("\n\n".join(p.get_text() for p in paragraphs))
+                if len(content) >= 100:
+                    return content
+
+        # Try common content container classes
         content_selectors = [
             {"class_": re.compile(r"article[-_]?(body|content|text)", re.I)},
             {"class_": re.compile(r"(post|entry)[-_]?(body|content)", re.I)},
             {"class_": re.compile(r"story[-_]?(body|content)", re.I)},
+            {"class_": re.compile(r"rich[-_]?text", re.I)},
             {"id": re.compile(r"article[-_]?(body|content)", re.I)},
+            {"itemprop": "articleBody"},
         ]
 
         for selector in content_selectors:
-            container = soup.find("div", **selector)
+            container = soup.find(["div", "section"], **selector)
             if container:
                 paragraphs = container.find_all("p")
                 if paragraphs:
-                    return self._clean_text("\n\n".join(p.get_text() for p in paragraphs))
+                    content = self._clean_text("\n\n".join(p.get_text() for p in paragraphs))
+                    if len(content) >= 100:
+                        return content
 
         # Fallback: get all paragraphs with substantial text
         all_paragraphs = soup.find_all("p")
