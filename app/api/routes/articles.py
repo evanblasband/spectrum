@@ -4,9 +4,11 @@ import logging
 import time
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from tenacity import RetryError
 
 from app.api.deps import get_analyze_use_case, get_find_related_use_case
 from app.core.interfaces.article_fetcher import ArticleFetchError
+from app.services.fetchers.web_scraper import RetryableError
 from app.core.use_cases.analyze_article import AnalyzeArticleUseCase
 from app.core.use_cases.find_related import FindRelatedUseCase
 from app.schemas.requests import AnalyzeArticleRequest, FindRelatedRequest
@@ -52,6 +54,14 @@ async def analyze_article(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Could not fetch article: {e.message}",
+        )
+    except (RetryableError, RetryError) as e:
+        # Retries exhausted for connection/timeout errors
+        original_error = e.__cause__ if isinstance(e, RetryError) else e
+        logger.warning(f"Failed to fetch article after retries: {original_error}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Could not reach the article URL after multiple attempts. Please check the URL and try again.",
         )
     except ValueError as e:
         logger.warning(f"Invalid request: {e}")

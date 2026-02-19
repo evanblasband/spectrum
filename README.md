@@ -167,6 +167,13 @@ DEBUG=true
 - Redis caching (uses in-memory cache)
 - Advanced comparison (agreements/disagreements extraction)
 
+### Roadmap / Planned Work
+
+- [ ] **Better error handling** - Improve error messages and user notifications throughout the app (network errors, API failures, scraping issues)
+- [ ] **Fix comparison feature** - Investigate and fix issues with the article comparison functionality
+- [ ] **Security audit** - Review input validation, XSS prevention, API key handling, dependency vulnerabilities
+- [ ] **Hosting setup** - Deploy to a hosting platform (Railway, Render, Vercel) for portfolio demonstration
+
 ## Tech Stack
 
 - **Backend**: Python 3.11, FastAPI, Pydantic

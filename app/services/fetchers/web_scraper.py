@@ -9,10 +9,15 @@ from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from app.core.entities.article import Article, ArticleSource
 from app.core.interfaces.article_fetcher import ArticleFetchError, ArticleFetcherInterface
+
+
+class RetryableError(Exception):
+    """Error that should be retried (e.g., timeouts, 5xx errors)."""
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +56,7 @@ class WebScraper(ArticleFetcherInterface):
                     "Upgrade-Insecure-Requests": "1",
                 },
                 follow_redirects=True,
+                http2=True,  # Many news sites require HTTP/2
             )
         return self._client
 
@@ -60,7 +66,12 @@ class WebScraper(ArticleFetcherInterface):
             await self._client.aclose()
             self._client = None
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=10),
+        retry=retry_if_exception_type(RetryableError),
+        reraise=True,
+    )
     async def fetch(self, url: str) -> Article:
         """Fetch and parse article content from URL."""
         logger.info(f"Fetching article from {url}")
@@ -70,19 +81,27 @@ class WebScraper(ArticleFetcherInterface):
             response = await client.get(url)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            status = e.response.status_code
-            if status == 403:
+            status_code = e.response.status_code
+            # Don't retry client errors (4xx) - they won't recover
+            if status_code == 403:
                 raise ArticleFetchError(
                     url, "Access denied (403). This site may block automated access."
                 )
-            elif status == 404:
-                raise ArticleFetchError(url, "Article not found (404)")
-            elif status == 429:
+            elif status_code == 404:
+                raise ArticleFetchError(url, "Article not found (404). The URL may be incorrect or the article was removed.")
+            elif status_code == 429:
                 raise ArticleFetchError(url, "Too many requests. Please try again later.")
+            elif 400 <= status_code < 500:
+                raise ArticleFetchError(url, f"HTTP error {status_code}")
             else:
-                raise ArticleFetchError(url, f"HTTP error {status}")
+                # Server errors (5xx) are retriable
+                raise RetryableError(f"HTTP error {status_code}")
+        except httpx.TimeoutException:
+            # Timeouts are retriable
+            raise RetryableError(f"Request timed out")
         except httpx.RequestError as e:
-            raise ArticleFetchError(url, f"Connection error: {str(e)}")
+            # Connection errors are retriable
+            raise RetryableError(f"Connection error: {str(e)}")
 
         html = response.text
         soup = BeautifulSoup(html, "lxml")
