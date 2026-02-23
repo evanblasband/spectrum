@@ -4,9 +4,10 @@ import { AnalysisCard } from '@/features/analysis/components/AnalysisCard'
 import { useAnalyzeArticle } from '@/features/analysis/hooks/useAnalyzeArticle'
 import { useFindRelated } from '@/features/related-articles/hooks/useFindRelated'
 import { RelatedArticlesList } from '@/features/related-articles/components/RelatedArticlesList'
-import { useComparisonStore } from '@/stores/useComparisonStore'
+import { useComparisonStore, isPendingArticle } from '@/stores/useComparisonStore'
 import { useSearchHistory } from '@/stores/useSearchHistory'
 import { ComparisonView } from '@/features/comparison/components/ComparisonView'
+import { ComparisonTray } from '@/features/comparison/components/ComparisonTray'
 import { useCompareArticles } from '@/features/comparison/hooks/useCompareArticles'
 import { ErrorMessage } from '@/components/common/ErrorMessage'
 import type { ArticleAnalysis } from '@/lib/api/client'
@@ -18,7 +19,7 @@ function App() {
   const { data: relatedData, isLoading: relatedLoading } = useFindRelated(analyzedUrl)
 
   // Comparison state
-  const { selectedArticles, addArticle, removeArticle, clearArticles } = useComparisonStore()
+  const { selectedArticles, addArticle, removeArticle } = useComparisonStore()
   const [showComparison, setShowComparison] = useState(false)
   const {
     mutate: compare,
@@ -72,8 +73,23 @@ function App() {
     }
   }
 
+  const handleCompare = () => {
+    // Get URLs from all articles (both analyzed and pending)
+    const urls = selectedArticles.map((article) => {
+      if (isPendingArticle(article)) {
+        return article.url
+      }
+      return article.article_url
+    })
+
+    setShowComparison(true)
+    compare({ urls })
+  }
+
+  const hasArticlesInTray = selectedArticles.length > 0
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${hasArticlesInTray ? 'pb-32' : ''}`}>
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6">
@@ -99,45 +115,8 @@ function App() {
           />
         </div>
 
-        {/* Comparison Bar - shows when articles are selected */}
-        {selectedArticles.length > 0 && !showComparison && (
-          <div className="mb-8 p-4 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-violet-700 dark:text-violet-300 font-medium">
-                  {selectedArticles.length} article{selectedArticles.length > 1 ? 's' : ''} selected for comparison
-                </span>
-                <div className="text-sm text-violet-600 dark:text-violet-400 mt-1">
-                  {selectedArticles.map(a => a.source_name).join(', ')}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={clearArticles}
-                  className="px-3 py-1 text-sm text-violet-600 dark:text-violet-400 hover:underline"
-                >
-                  Clear
-                </button>
-                {selectedArticles.length >= 2 && (
-                  <button
-                    onClick={() => {
-                      setShowComparison(true)
-                      compare({
-                        urls: selectedArticles.map(a => a.article_url),
-                      })
-                    }}
-                    className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 text-sm font-medium"
-                  >
-                    Compare Articles
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Comparison View */}
-        {showComparison && selectedArticles.length >= 2 && (
+        {showComparison && (
           <div className="mb-8">
             <button
               onClick={() => {
@@ -154,7 +133,7 @@ function App() {
               <div className="flex flex-col items-center justify-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
                 <p className="mt-4 text-gray-600 dark:text-gray-400">
-                  Comparing articles...
+                  Analyzing and comparing articles...
                 </p>
               </div>
             )}
@@ -163,7 +142,7 @@ function App() {
             {comparisonError && !isComparing && (
               <ErrorMessage
                 error={comparisonError}
-                onRetry={() => compare({ urls: selectedArticles.map(a => a.article_url) })}
+                onRetry={handleCompare}
               />
             )}
 
@@ -208,16 +187,22 @@ function App() {
                 {!useComparisonStore.getState().isSelected(data.data.article_id) ? (
                   <button
                     onClick={() => handleAddToComparison(data.data!)}
-                    className="px-3 py-1 text-sm text-violet-600 dark:text-violet-400 border border-violet-300 dark:border-violet-700 rounded hover:bg-violet-50 dark:hover:bg-violet-900/20"
+                    className="px-3 py-1 text-sm text-violet-600 dark:text-violet-400 border border-violet-300 dark:border-violet-700 rounded hover:bg-violet-50 dark:hover:bg-violet-900/20 flex items-center gap-1"
                   >
-                    + Add to Comparison
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add to Comparison
                   </button>
                 ) : (
                   <button
                     onClick={() => removeArticle(data.data!.article_id)}
-                    className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded"
+                    className="px-3 py-1 text-sm bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-300 dark:border-violet-700 rounded flex items-center gap-1"
                   >
-                    Remove from Comparison
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    In Comparison
                   </button>
                 )}
               </div>
@@ -257,6 +242,11 @@ function App() {
           </p>
         </div>
       </main>
+
+      {/* Comparison Tray */}
+      {!showComparison && (
+        <ComparisonTray onCompare={handleCompare} isComparing={isComparing} />
+      )}
     </div>
   )
 }
