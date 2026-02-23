@@ -7,6 +7,7 @@ import { RelatedArticlesList } from '@/features/related-articles/components/Rela
 import { useComparisonStore } from '@/stores/useComparisonStore'
 import { useSearchHistory } from '@/stores/useSearchHistory'
 import { ComparisonView } from '@/features/comparison/components/ComparisonView'
+import { useCompareArticles } from '@/features/comparison/hooks/useCompareArticles'
 import { ErrorMessage } from '@/components/common/ErrorMessage'
 import type { ArticleAnalysis } from '@/lib/api/client'
 
@@ -19,6 +20,13 @@ function App() {
   // Comparison state
   const { selectedArticles, addArticle, removeArticle, clearArticles } = useComparisonStore()
   const [showComparison, setShowComparison] = useState(false)
+  const {
+    mutate: compare,
+    data: comparisonData,
+    isPending: isComparing,
+    error: comparisonError,
+    reset: resetComparison,
+  } = useCompareArticles()
 
   // Search history
   const { addToHistory } = useSearchHistory()
@@ -62,14 +70,6 @@ function App() {
     if (url) {
       handleAnalyze(url)
     }
-  }
-
-  const handleReset = () => {
-    setUrl('')
-    setAnalyzedUrl(null)
-    setShowComparison(false)
-    clearArticles()
-    reset()
   }
 
   return (
@@ -120,7 +120,12 @@ function App() {
                 </button>
                 {selectedArticles.length >= 2 && (
                   <button
-                    onClick={() => setShowComparison(true)}
+                    onClick={() => {
+                      setShowComparison(true)
+                      compare({
+                        urls: selectedArticles.map(a => a.article_url),
+                      })
+                    }}
                     className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 text-sm font-medium"
                   >
                     Compare Articles
@@ -135,17 +140,43 @@ function App() {
         {showComparison && selectedArticles.length >= 2 && (
           <div className="mb-8">
             <button
-              onClick={() => setShowComparison(false)}
+              onClick={() => {
+                setShowComparison(false)
+                resetComparison()
+              }}
               className="mb-4 text-sm text-violet-600 dark:text-violet-400 hover:underline"
             >
               &larr; Back to analysis
             </button>
-            <ComparisonView
-              articles={selectedArticles}
-              consensusPoints={[]}
-              contestedPoints={[]}
-              overallSummary={generateComparisonSummary(selectedArticles)}
-            />
+
+            {/* Comparison Loading */}
+            {isComparing && (
+              <div className="flex flex-col items-center justify-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+                <p className="mt-4 text-gray-600 dark:text-gray-400">
+                  Comparing articles...
+                </p>
+              </div>
+            )}
+
+            {/* Comparison Error */}
+            {comparisonError && !isComparing && (
+              <ErrorMessage
+                error={comparisonError}
+                onRetry={() => compare({ urls: selectedArticles.map(a => a.article_url) })}
+              />
+            )}
+
+            {/* Comparison Results */}
+            {comparisonData && !isComparing && (
+              <ComparisonView
+                articles={comparisonData.articles}
+                pairwiseComparisons={comparisonData.pairwise_comparisons}
+                consensusPoints={comparisonData.consensus_points}
+                contestedPoints={comparisonData.contested_points}
+                overallSummary={comparisonData.overall_summary}
+              />
+            )}
           </div>
         )}
 
@@ -228,20 +259,6 @@ function App() {
       </main>
     </div>
   )
-}
-
-// Helper function to generate comparison summary
-function generateComparisonSummary(articles: ArticleAnalysis[]): string {
-  const scores = articles.map(a => a.political_leaning.score)
-  const spread = Math.max(...scores) - Math.min(...scores)
-  const sources = articles.map(a => a.source_name).join(', ')
-
-  if (spread < 0.3) {
-    return `The articles from ${sources} share similar political perspectives.`
-  } else if (spread < 0.6) {
-    return `The articles from ${sources} show moderate differences in political framing.`
-  }
-  return `The articles from ${sources} represent significantly different political viewpoints.`
 }
 
 export default App
