@@ -121,7 +121,7 @@ function App() {
       <ColdStartBanner />
 
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
+      <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between py-4">
             <div>

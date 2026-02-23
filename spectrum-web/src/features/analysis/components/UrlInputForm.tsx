@@ -114,7 +114,7 @@ export function UrlInputForm({
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 relative z-[100]" ref={dropdownRef}>
+        <div className="flex-1 relative z-40" ref={dropdownRef}>
           <label htmlFor="url-input" className="sr-only">
             Article URL
           </label>
