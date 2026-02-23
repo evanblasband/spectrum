@@ -58,6 +58,12 @@ function App() {
     addArticle(analysis)
   }
 
+  const handleRetry = () => {
+    if (url) {
+      handleAnalyze(url)
+    }
+  }
+
   const handleReset = () => {
     setUrl('')
     setAnalyzedUrl(null)
@@ -147,7 +153,7 @@ function App() {
         {error && !showComparison && (
           <ErrorMessage
             error={error}
-            onRetry={handleReset}
+            onRetry={handleRetry}
             className="mb-8"
           />
         )}
