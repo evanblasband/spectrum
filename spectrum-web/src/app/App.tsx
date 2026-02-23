@@ -88,6 +88,8 @@ function App() {
             onSubmit={handleAnalyze}
             isLoading={isPending}
             disabled={isPending}
+            value={url}
+            onChange={setUrl}
           />
         </div>
 

@@ -7,14 +7,27 @@ interface UrlInputFormProps {
   onSubmit: (url: string) => void
   isLoading?: boolean
   disabled?: boolean
+  value?: string
+  onChange?: (url: string) => void
 }
 
 export function UrlInputForm({
   onSubmit,
   isLoading = false,
   disabled = false,
+  value,
+  onChange,
 }: UrlInputFormProps) {
-  const [url, setUrl] = useState('')
+  const [internalUrl, setInternalUrl] = useState('')
+
+  // Support both controlled and uncontrolled modes
+  const url = value !== undefined ? value : internalUrl
+  const setUrl = (newUrl: string) => {
+    if (onChange) {
+      onChange(newUrl)
+    }
+    setInternalUrl(newUrl)
+  }
   const [error, setError] = useState<string | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
