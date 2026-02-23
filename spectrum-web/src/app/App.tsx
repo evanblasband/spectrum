@@ -10,6 +10,7 @@ import { ComparisonView } from '@/features/comparison/components/ComparisonView'
 import { ComparisonTray } from '@/features/comparison/components/ComparisonTray'
 import { useCompareArticles } from '@/features/comparison/hooks/useCompareArticles'
 import { ErrorMessage } from '@/components/common/ErrorMessage'
+import { ColdStartBanner } from '@/components/common/ColdStartBanner'
 import { MarkdownViewer } from '@/components/docs'
 import type { ArticleAnalysis, DocName } from '@/lib/api/client'
 
@@ -116,6 +117,9 @@ function App() {
 
   return (
     <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 ${hasArticlesInTray && !isDocPage ? 'pb-32' : ''}`}>
+      {/* Cold Start Banner - shows when backend is waking up */}
+      <ColdStartBanner />
+
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4">

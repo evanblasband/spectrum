@@ -1,0 +1,36 @@
+# =============================================================================
+# Docker Ignore - Spectrum Web
+# =============================================================================
+
+# Dependencies
+node_modules
+
+# Build output
+dist
+build
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage
+
+# Misc
+.DS_Store
+*.md

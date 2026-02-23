@@ -1,0 +1,60 @@
+# =============================================================================
+# Docker Ignore - Spectrum API
+# =============================================================================
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+ENV
+env
+.eggs
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+tests
+htmlcov
+.coverage
+.tox
+
+# Documentation (keep markdown files for docs endpoint)
+*.md
+!README.md
+!prd.md
+!ARCHITECTURE.md
+!diagrams.md
+!TECH_DECISIONS.md
+
+# Frontend (separate build)
+spectrum-web
+
+# Docker
+docker
+Dockerfile*
+docker-compose*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Misc
+*.log
+.DS_Store
