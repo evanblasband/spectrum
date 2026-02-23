@@ -33,15 +33,15 @@ export function SpectrumMarker({
     >
       {/* Marker dot */}
       <div
-        className={`${sizeClasses[size]} rounded-full border-2 border-white dark:border-gray-800 shadow-md`}
+        className={`${sizeClasses[size]} rounded-full border-2 border-white dark:border-slate-800 shadow-md`}
         style={{ backgroundColor: color, opacity }}
       />
       
       {/* Label */}
       {showLabel && (
-        <div className="mt-2 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+        <div className="mt-2 text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
           {label}
-          <span className="ml-1 text-gray-500">
+          <span className="ml-1 text-slate-500">
             ({score > 0 ? '+' : ''}{score.toFixed(2)})
           </span>
         </div>

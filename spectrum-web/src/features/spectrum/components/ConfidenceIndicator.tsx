@@ -40,17 +40,17 @@ export function ConfidenceIndicator({
   return (
     <div className="flex items-center gap-2">
       {showLabel && (
-        <span className={textSizes[size] + ' text-gray-600 dark:text-gray-400'}>
+        <span className={textSizes[size] + ' text-slate-600 dark:text-slate-400'}>
           Confidence:
         </span>
       )}
-      <div className={sizeClasses[size] + ' bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'}>
+      <div className={sizeClasses[size] + ' bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden'}>
         <div
           className={'h-full rounded-full transition-all ' + colorClass}
           style={{ width: percentage + '%' }}
         />
       </div>
-      <span className={textSizes[size] + ' font-medium text-gray-700 dark:text-gray-300'}>
+      <span className={textSizes[size] + ' font-medium text-slate-700 dark:text-slate-300'}>
         {percentage}%
       </span>
 
@@ -59,7 +59,7 @@ export function ConfidenceIndicator({
         <div className="relative">
           <button
             type="button"
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none"
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
             onFocus={() => setShowTooltip(true)}

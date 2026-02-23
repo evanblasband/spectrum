@@ -89,14 +89,14 @@ function App() {
   const hasArticlesInTray = selectedArticles.length > 0
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${hasArticlesInTray ? 'pb-32' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 ${hasArticlesInTray ? 'pb-32' : ''}`}>
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
             Spectrum
           </h1>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-slate-600 dark:text-slate-400">
             Understand where news articles fall on the political spectrum
           </p>
         </div>
@@ -123,16 +123,16 @@ function App() {
                 setShowComparison(false)
                 resetComparison()
               }}
-              className="mb-4 text-sm text-violet-600 dark:text-violet-400 hover:underline"
+              className="mb-4 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:underline"
             >
               &larr; Back to analysis
             </button>
 
             {/* Comparison Loading */}
             {isComparing && (
-              <div className="flex flex-col items-center justify-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
-                <p className="mt-4 text-gray-600 dark:text-gray-400">
+              <div className="flex flex-col items-center justify-center py-12 bg-white dark:bg-slate-800 rounded-xl shadow-lg">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p className="mt-4 text-slate-600 dark:text-slate-400">
                   Analyzing and comparing articles...
                 </p>
               </div>
@@ -171,8 +171,8 @@ function App() {
         {/* Loading State */}
         {isPending && !showComparison && (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-slate-600 dark:text-slate-400">
               Analyzing article...
             </p>
           </div>
@@ -187,7 +187,7 @@ function App() {
                 {!useComparisonStore.getState().isSelected(data.data.article_id) ? (
                   <button
                     onClick={() => handleAddToComparison(data.data!)}
-                    className="px-3 py-1 text-sm text-violet-600 dark:text-violet-400 border border-violet-300 dark:border-violet-700 rounded hover:bg-violet-50 dark:hover:bg-violet-900/20 flex items-center gap-1"
+                    className="px-3 py-1 text-sm text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -197,7 +197,7 @@ function App() {
                 ) : (
                   <button
                     onClick={() => removeArticle(data.data!.article_id)}
-                    className="px-3 py-1 text-sm bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-300 dark:border-violet-700 rounded flex items-center gap-1"
+                    className="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 rounded flex items-center gap-1"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -210,13 +210,13 @@ function App() {
             </div>
 
             {/* Related Articles Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Related Articles
               </h3>
               {relatedLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
               ) : relatedData?.articles ? (
                 <RelatedArticlesList
@@ -225,7 +225,7 @@ function App() {
                   onAnalyze={handleAnalyzeRelated}
                 />
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                <p className="text-slate-500 dark:text-slate-400 text-center py-4">
                   No related articles found. Make sure NEWSAPI_KEY is configured.
                 </p>
               )}
@@ -234,7 +234,7 @@ function App() {
         )}
 
         {/* Disclaimer */}
-        <div className="mt-12 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+        <div className="mt-12 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm text-slate-600 dark:text-slate-400">
           <p>
             <strong>Disclaimer:</strong> This analysis is generated by AI and represents
             one interpretation of the article's content. Political spectrum placement is

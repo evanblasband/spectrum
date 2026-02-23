@@ -30,26 +30,26 @@ export function ComparisonSummary({
   return (
     <div className="space-y-6">
       {/* Overall Summary */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-        <p className="text-gray-700 dark:text-gray-300">{overallSummary}</p>
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
+        <p className="text-slate-700 dark:text-slate-300">{overallSummary}</p>
       </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="text-sm text-slate-500 dark:text-slate-400">
             Political Spread
           </div>
           <div className={'text-2xl font-bold ' + spreadColor}>
             {spreadLabel}
           </div>
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-slate-400">
             Difference: {leaningSpread.toFixed(2)}
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="text-sm text-slate-500 dark:text-slate-400">
             Agreements
           </div>
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -57,8 +57,8 @@ export function ComparisonSummary({
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="text-sm text-slate-500 dark:text-slate-400">
             Disagreements
           </div>
           <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
@@ -70,14 +70,14 @@ export function ComparisonSummary({
       {/* Common Topics */}
       {commonTopics.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Shared Topics
           </h4>
           <div className="flex flex-wrap gap-2">
             {commonTopics.map((topic) => (
               <span
                 key={topic}
-                className="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm"
+                className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm"
               >
                 {topic}
               </span>
@@ -89,14 +89,14 @@ export function ComparisonSummary({
       {/* Agreements */}
       {agreements.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Key Agreements
           </h4>
           <ul className="space-y-2">
             {agreements.map((agreement, i) => (
               <li key={i} className="flex gap-2 text-sm">
                 <span className="text-green-500">+</span>
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-slate-700 dark:text-slate-300">
                   {agreement}
                 </span>
               </li>
@@ -108,14 +108,14 @@ export function ComparisonSummary({
       {/* Disagreements */}
       {disagreements.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Key Disagreements
           </h4>
           <ul className="space-y-2">
             {disagreements.map((disagreement, i) => (
               <li key={i} className="flex gap-2 text-sm">
                 <span className="text-orange-500">-</span>
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-slate-700 dark:text-slate-300">
                   {disagreement}
                 </span>
               </li>

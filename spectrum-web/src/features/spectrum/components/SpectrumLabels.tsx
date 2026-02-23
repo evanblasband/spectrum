@@ -28,7 +28,7 @@ export function SpectrumLabels({ showAll = false }: SpectrumLabelsProps) {
       {labels.map(({ label, position }) => (
         <span
           key={label}
-          className="absolute text-xs text-gray-500 dark:text-gray-400 transform -translate-x-1/2"
+          className="absolute text-xs text-slate-500 dark:text-slate-400 transform -translate-x-1/2"
           style={{ left: `${position}%` }}
         >
           {label}

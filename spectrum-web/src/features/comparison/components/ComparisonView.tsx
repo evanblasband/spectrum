@@ -42,15 +42,15 @@ export function ComparisonView({
   )
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-700">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               Comparison: {articles.length} Articles
             </h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               Comparing coverage from {articles.map((a) => a.source_name).join(', ')}
             </p>
           </div>
@@ -73,8 +73,8 @@ export function ComparisonView({
       </div>
 
       {/* Spectrum Visualization - Always shown */}
-      <div className="p-6 bg-gray-50 dark:bg-gray-900/50">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+      <div className="p-6 bg-slate-50 dark:bg-slate-900/50">
+        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">
           Political Spectrum Positions
         </h3>
         <ComparisonSpectrum articles={articles} />
@@ -91,16 +91,16 @@ export function ComparisonView({
                 style={{
                   backgroundColor:
                     article.political_leaning.score <= -0.3
-                      ? '#8b5cf6'
+                      ? '#3b82f6'
                       : article.political_leaning.score >= 0.3
                       ? '#f97316'
-                      : '#6b7280',
+                      : '#64748b',
                 }}
               />
-              <span className="text-gray-700 dark:text-gray-300">
+              <span className="text-slate-700 dark:text-slate-300">
                 {article.source_name}
               </span>
-              <span className="text-gray-500">
+              <span className="text-slate-500">
                 ({getLabel(article.political_leaning.score)})
               </span>
             </div>
@@ -128,7 +128,7 @@ export function ComparisonView({
         )}
 
         {detailLevel === 'diff' && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
             <p>Detailed topic-by-topic view coming soon...</p>
           </div>
         )}

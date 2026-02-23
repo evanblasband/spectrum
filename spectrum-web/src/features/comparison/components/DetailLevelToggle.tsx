@@ -13,7 +13,7 @@ const LEVELS: { value: DetailLevel; label: string; description: string }[] = [
 
 export function DetailLevelToggle({ level, onChange }: DetailLevelToggleProps) {
   return (
-    <div className="inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+    <div className="inline-flex rounded-lg bg-slate-100 dark:bg-slate-700 p-1">
       {LEVELS.map((option) => (
         <button
           key={option.value}
@@ -22,8 +22,8 @@ export function DetailLevelToggle({ level, onChange }: DetailLevelToggleProps) {
             px-4 py-2 text-sm font-medium rounded-md transition-colors
             ${
               level === option.value
-                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }
           `}
           title={option.description}

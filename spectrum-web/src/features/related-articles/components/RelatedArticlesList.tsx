@@ -20,7 +20,7 @@ export function RelatedArticlesList({
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="h-24 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
+            className="h-24 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse"
           />
         ))}
       </div>
@@ -29,7 +29,7 @@ export function RelatedArticlesList({
 
   if (articles.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+      <div className="text-center py-8 text-slate-500 dark:text-slate-400">
         No related articles found.
       </div>
     )
@@ -40,13 +40,13 @@ export function RelatedArticlesList({
       {/* Keywords used for search */}
       {keywords.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-slate-500 dark:text-slate-400">
             Searched for:
           </span>
           {keywords.map((keyword) => (
             <span
               key={keyword}
-              className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs"
+              className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-xs"
             >
               {keyword}
             </span>

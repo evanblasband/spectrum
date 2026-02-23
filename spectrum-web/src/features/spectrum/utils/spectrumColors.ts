@@ -1,6 +1,6 @@
 /**
  * Spectrum color utilities.
- * Uses purple-to-orange gradient to avoid political red/blue connotations.
+ * Uses blue-to-orange gradient for clear visual distinction.
  */
 
 export type PoliticalLabel =
@@ -29,13 +29,13 @@ export function getLabel(score: number): PoliticalLabel {
  * Get color for a political score
  */
 export function getColor(score: number): string {
-  if (score <= -0.6) return '#7c3aed' // Purple - Far Left
-  if (score <= -0.3) return '#8b5cf6' // Light purple - Left
-  if (score <= -0.1) return '#a78bfa' // Lighter purple - Slight Left
-  if (score <= 0.1) return '#6b7280'  // Gray - Center
-  if (score <= 0.3) return '#f59e0b'  // Amber - Slight Right
-  if (score <= 0.6) return '#f97316'  // Orange - Right
-  return '#ea580c' // Darker orange - Far Right
+  if (score <= -0.6) return '#1e40af' // Blue-800 - Far Left
+  if (score <= -0.3) return '#2563eb' // Blue-600 - Left
+  if (score <= -0.1) return '#3b82f6' // Blue-500 - Slight Left
+  if (score <= 0.1) return '#64748b'  // Slate-500 - Center
+  if (score <= 0.3) return '#f59e0b'  // Amber-500 - Slight Right
+  if (score <= 0.6) return '#f97316'  // Orange-500 - Right
+  return '#ea580c' // Orange-600 - Far Right
 }
 
 /**

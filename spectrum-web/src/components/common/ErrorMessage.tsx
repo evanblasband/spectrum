@@ -33,9 +33,9 @@ const ERROR_STYLES: Record<ErrorCode, ErrorStyle> = {
     icon: '📄',
   },
   NOT_FOUND: {
-    bg: 'bg-gray-50 dark:bg-gray-800/50',
-    border: 'border-gray-200 dark:border-gray-700',
-    text: 'text-gray-700 dark:text-gray-400',
+    bg: 'bg-slate-50 dark:bg-slate-800/50',
+    border: 'border-slate-200 dark:border-slate-700',
+    text: 'text-slate-700 dark:text-slate-400',
     icon: '🔍',
   },
   RATE_LIMITED: {

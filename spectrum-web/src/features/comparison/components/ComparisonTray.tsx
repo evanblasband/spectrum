@@ -29,9 +29,9 @@ export function ComparisonTray({ onCompare, isComparing = false }: ComparisonTra
       {/* Collapse toggle */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -top-8 left-1/2 -translate-x-1/2 px-4 py-1 bg-violet-600 text-white text-sm rounded-t-lg flex items-center gap-2 shadow-lg"
+        className="absolute -top-8 left-1/2 -translate-x-1/2 px-4 py-1 bg-slate-800 dark:bg-slate-700 text-white text-sm rounded-t-lg flex items-center gap-2 shadow-lg"
       >
-        <span className="w-5 h-5 bg-white text-violet-600 rounded-full text-xs font-bold flex items-center justify-center">
+        <span className="w-5 h-5 bg-blue-500 text-white rounded-full text-xs font-bold flex items-center justify-center">
           {selectedArticles.length}
         </span>
         <span>Comparison</span>
@@ -47,7 +47,7 @@ export function ComparisonTray({ onCompare, isComparing = false }: ComparisonTra
 
       {/* Tray content */}
       <div
-        className={`bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-2xl transition-all duration-300 ${
+        className={`bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 shadow-2xl transition-all duration-300 ${
           isCollapsed ? 'h-0 overflow-hidden' : 'h-auto'
         }`}
       >
@@ -65,7 +65,7 @@ export function ComparisonTray({ onCompare, isComparing = false }: ComparisonTra
 
               {/* Add more placeholder */}
               {selectedArticles.length < 5 && (
-                <div className="flex-shrink-0 w-40 h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+                <div className="flex-shrink-0 w-40 h-20 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm">
                   + Add more
                 </div>
               )}
@@ -78,8 +78,8 @@ export function ComparisonTray({ onCompare, isComparing = false }: ComparisonTra
                 disabled={!canCompare || isComparing}
                 className={`px-6 py-2 rounded-lg font-medium text-sm transition-colors ${
                   canCompare && !isComparing
-                    ? 'bg-violet-600 text-white hover:bg-violet-700'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                    ? 'bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-900 dark:hover:bg-slate-600'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                 }`}
               >
                 {isComparing ? (
@@ -115,7 +115,7 @@ export function ComparisonTray({ onCompare, isComparing = false }: ComparisonTra
 
               <button
                 onClick={clearArticles}
-                className="text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                className="text-sm text-slate-500 hover:text-red-500 dark:hover:text-red-400"
               >
                 Clear all
               </button>
@@ -138,17 +138,17 @@ function ArticleCard({
   const source = isPending ? article.source : article.source_name
   const title = isPending ? article.title : article.article_title
   const score = isPending ? null : article.political_leaning.score
-  const color = score !== null ? getColor(score) : '#9ca3af'
+  const color = score !== null ? getColor(score) : '#94a3b8'
 
   return (
     <div
-      className="relative flex-shrink-0 w-44 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 group"
+      className="relative flex-shrink-0 w-44 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 group"
       style={{ borderLeftColor: color, borderLeftWidth: '3px' }}
     >
       {/* Remove button */}
       <button
         onClick={onRemove}
-        className="absolute -top-2 -right-2 w-5 h-5 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+        className="absolute -top-2 -right-2 w-5 h-5 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
       >
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -163,17 +163,17 @@ function ArticleCard({
       )}
 
       {/* Content */}
-      <div className="text-xs font-medium text-gray-900 dark:text-white truncate">
+      <div className="text-xs font-medium text-slate-900 dark:text-white truncate">
         {source}
       </div>
-      <div className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
+      <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
         {title}
       </div>
 
       {/* Score indicator */}
       {score !== null && (
         <div className="mt-2 flex items-center gap-1">
-          <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+          <div className="flex-1 h-1 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full"
               style={{
@@ -182,7 +182,7 @@ function ArticleCard({
               }}
             />
           </div>
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-slate-400">
             {score > 0 ? '+' : ''}{score.toFixed(1)}
           </span>
         </div>

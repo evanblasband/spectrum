@@ -18,7 +18,7 @@ export function SideBySideView({ articles, pairwiseComparisons }: SideBySideView
   )
 
   if (!articleA || !articleB) {
-    return <div className="text-gray-500">Need at least 2 articles for side-by-side comparison</div>
+    return <div className="text-slate-500">Need at least 2 articles for side-by-side comparison</div>
   }
 
   return (
@@ -55,13 +55,13 @@ function ArticleHeader({ article }: { article: ArticleAnalysis }) {
   const color = getColor(score)
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+          <h3 className="font-semibold text-slate-900 dark:text-white truncate">
             {article.source_name}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+          <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mt-1">
             {article.article_title}
           </p>
         </div>
@@ -73,7 +73,7 @@ function ArticleHeader({ article }: { article: ArticleAnalysis }) {
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2">
-        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all"
             style={{
@@ -82,7 +82,7 @@ function ArticleHeader({ article }: { article: ArticleAnalysis }) {
             }}
           />
         </div>
-        <span className="text-xs text-gray-500 w-12 text-right">
+        <span className="text-xs text-slate-500 w-12 text-right">
           {score > 0 ? '+' : ''}{score.toFixed(2)}
         </span>
       </div>
@@ -92,8 +92,8 @@ function ArticleHeader({ article }: { article: ArticleAnalysis }) {
 
 function KeyPointsSection({ article, label }: { article: ArticleAnalysis; label: string }) {
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{label}</h4>
+    <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+      <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{label}</h4>
       {article.key_points.length > 0 ? (
         <ul className="space-y-3">
           {article.key_points.map((point) => (
@@ -105,13 +105,13 @@ function KeyPointsSection({ article, label }: { article: ArticleAnalysis; label:
                       ? 'bg-green-500'
                       : point.sentiment === 'negative'
                       ? 'bg-red-500'
-                      : 'bg-gray-400'
+                      : 'bg-slate-400'
                   }`}
                 />
                 <div>
-                  <p className="text-gray-700 dark:text-gray-300">{point.statement}</p>
+                  <p className="text-slate-700 dark:text-slate-300">{point.statement}</p>
                   {point.supporting_quote && (
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-500 italic">
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-500 italic">
                       "{point.supporting_quote}"
                     </p>
                   )}
@@ -121,7 +121,7 @@ function KeyPointsSection({ article, label }: { article: ArticleAnalysis; label:
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-gray-500">No key points extracted</p>
+        <p className="text-sm text-slate-500">No key points extracted</p>
       )}
     </div>
   )
@@ -144,8 +144,8 @@ function TopicsSection({
   const allTopics = [article.topics.primary_topic, ...article.topics.secondary_topics]
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Topics</h4>
+    <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+      <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Topics</h4>
       <div className="flex flex-wrap gap-1.5">
         {allTopics.map((topic) => {
           const isShared = sharedTopics.includes(topic)
@@ -155,10 +155,10 @@ function TopicsSection({
               key={topic}
               className={`px-2 py-0.5 text-xs rounded ${
                 isShared
-                  ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                   : isUnique
                   ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                  : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
               }`}
               title={isShared ? 'Shared topic' : isUnique ? 'Unique to this article' : ''}
             >
@@ -167,9 +167,9 @@ function TopicsSection({
           )
         })}
       </div>
-      <div className="mt-2 flex gap-3 text-xs text-gray-500">
+      <div className="mt-2 flex gap-3 text-xs text-slate-500">
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded bg-violet-500" /> Shared
+          <span className="w-2 h-2 rounded bg-blue-500" /> Shared
         </span>
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded bg-amber-500" /> Unique
@@ -181,8 +181,8 @@ function TopicsSection({
 
 function EntitiesSection({ article }: { article: ArticleAnalysis }) {
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+    <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+      <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
         People & Organizations Mentioned
       </h4>
       {article.topics.entities.length > 0 ? (
@@ -197,7 +197,7 @@ function EntitiesSection({ article }: { article: ArticleAnalysis }) {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-500">No entities extracted</p>
+        <p className="text-sm text-slate-500">No entities extracted</p>
       )}
     </div>
   )

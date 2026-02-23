@@ -17,7 +17,7 @@ export function MiniSpectrum({ score, size = 'sm' }: MiniSpectrumProps) {
   return (
     <div className={'w-full rounded-full overflow-hidden relative ' + heights[size]}
       style={{
-        background: 'linear-gradient(to right, #7c3aed, #6b7280, #ea580c)',
+        background: 'linear-gradient(to right, #1e40af, #64748b, #ea580c)',
       }}
     >
       {/* Marker */}

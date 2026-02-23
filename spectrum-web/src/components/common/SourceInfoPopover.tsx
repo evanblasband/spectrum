@@ -92,7 +92,7 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
         ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 rounded-full"
+        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
         aria-label="View supported news sources"
         aria-expanded={isOpen}
       >
@@ -109,13 +109,13 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
       {isOpen && (
         <div
           ref={popoverRef}
-          className="absolute z-[100] right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+          className="absolute z-[100] right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
           role="dialog"
           aria-label="Supported news sources"
         >
           {/* Header */}
-          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+          <div className="px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
               News Source Compatibility
             </h3>
           </div>
@@ -131,7 +131,7 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                <span className="text-sm font-medium text-slate-900 dark:text-white">
                   Supported Sources ({supported.length})
                 </span>
               </div>
@@ -150,7 +150,7 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
             {/* Partial Support */}
             {partial.length > 0 && (
               <>
-                <div className="border-t border-gray-200 dark:border-gray-700" />
+                <div className="border-t border-slate-200 dark:border-slate-700" />
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -160,7 +160,7 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">
                       May Work ({partial.length})
                     </span>
                   </div>
@@ -174,7 +174,7 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
                       </span>
                     ))}
                   </div>
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
                     These sites have inconsistent results.
                   </p>
                 </div>
@@ -182,7 +182,7 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
             )}
 
             {/* Blocked Sources */}
-            <div className="border-t border-gray-200 dark:border-gray-700" />
+            <div className="border-t border-slate-200 dark:border-slate-700" />
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -192,28 +192,28 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                <span className="text-sm font-medium text-slate-900 dark:text-white">
                   Not Supported ({blocked.length})
                 </span>
               </div>
               <div className="space-y-1.5">
                 {blocked.map(({ domain }) => (
-                  <div key={domain} className="text-xs text-gray-600 dark:text-gray-400">
+                  <div key={domain} className="text-xs text-slate-600 dark:text-slate-400">
                     <span className="font-medium text-red-700 dark:text-red-400">
                       {formatDomain(domain)}
                     </span>
                   </div>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
                 These sites block automated access or require subscriptions.
               </p>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="px-4 py-2 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Most major news sources work. Blocked sites have anti-bot protection.
             </p>
           </div>

@@ -31,13 +31,13 @@ export function SpectrumScale({
         <div
           className={`${heightClasses[height]} rounded-full overflow-hidden`}
           style={{
-            background: `linear-gradient(to right, 
-              #7c3aed 0%, 
-              #8b5cf6 17%, 
-              #a78bfa 33%, 
-              #6b7280 50%, 
-              #f59e0b 67%, 
-              #f97316 83%, 
+            background: `linear-gradient(to right,
+              #1e40af 0%,
+              #2563eb 17%,
+              #3b82f6 33%,
+              #64748b 50%,
+              #f59e0b 67%,
+              #f97316 83%,
               #ea580c 100%
             )`,
           }}

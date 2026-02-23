@@ -34,29 +34,29 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
   const color = getColor(political_leaning.score)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-700">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               {article_title}
             </h2>
             <a
               href={article_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-violet-600 hover:underline"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             >
               {source_name}
             </a>
             {/* Brief article summary */}
-            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               {generateBriefSummary(analysis)}
             </p>
           </div>
           {analysis.cached && (
-            <span className="flex-shrink-0 text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+            <span className="flex-shrink-0 text-xs text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
               Cached
             </span>
           )}
@@ -64,7 +64,7 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
       </div>
 
       {/* Spectrum Visualization */}
-      <div className="p-6 bg-gray-50 dark:bg-gray-900/50">
+      <div className="p-6 bg-slate-50 dark:bg-slate-900/50">
         <div className="mb-4">
           <SpectrumScale
             score={political_leaning.score}
@@ -83,10 +83,10 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
               style={{ backgroundColor: color }}
             />
             <div>
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">
+              <span className="text-lg font-semibold text-slate-900 dark:text-white">
                 {label}
               </span>
-              <span className="ml-2 text-gray-500">
+              <span className="ml-2 text-slate-500">
                 ({political_leaning.score > 0 ? '+' : ''}{political_leaning.score.toFixed(2)})
               </span>
             </div>
@@ -95,11 +95,11 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
         </div>
 
         {/* Reasoning */}
-        <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg">
+          <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
             Analysis Reasoning
           </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             {political_leaning.reasoning}
           </p>
         </div>
@@ -111,8 +111,8 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-xs text-gray-400">
+      <div className="px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700">
+        <p className="text-xs text-slate-400">
           Analyzed by {analysis.ai_provider} at {new Date(analysis.analyzed_at).toLocaleString()}
         </p>
       </div>
