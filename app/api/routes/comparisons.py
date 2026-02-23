@@ -35,8 +35,8 @@ def get_compare_use_case(
 @router.post("", response_model=MultiArticleComparison)
 @limiter.limit(COMPARE_LIMIT)
 async def compare_articles(
-    request: CompareArticlesRequest,
-    http_request: Request,  # Required for rate limiter
+    body: CompareArticlesRequest,
+    request: Request,  # Required for rate limiter - must be named 'request'
     use_case: CompareArticlesUseCase = Depends(get_compare_use_case),
 ) -> MultiArticleComparison:
     """
@@ -51,8 +51,8 @@ async def compare_articles(
 
     try:
         comparison = await use_case.execute(
-            urls=[str(url) for url in request.article_urls],
-            comparison_depth=request.comparison_depth,
+            urls=[str(url) for url in body.article_urls],
+            comparison_depth=body.comparison_depth,
         )
 
         processing_time = int((time.time() - start_time) * 1000)

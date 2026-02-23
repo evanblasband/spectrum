@@ -184,7 +184,7 @@ flowchart TB
     end
 
     subgraph Navigation["Header Navigation"]
-        NavTabs[Tab Navigation<br/>Analyzer | README | PRD | Architecture | Diagrams | Tech Decisions]
+        NavTabs[Tab Navigation<br/>Analyzer / README / PRD / Architecture / Diagrams / Tech Decisions]
         GitHubBtn[GitHub Button]
     end
 

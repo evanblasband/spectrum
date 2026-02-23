@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 @router.post("/analyze", response_model=AnalysisResponse)
 @limiter.limit(ANALYZE_LIMIT)
 async def analyze_article(
-    request: AnalyzeArticleRequest,
-    http_request: Request,  # Required for rate limiter
+    body: AnalyzeArticleRequest,
+    request: Request,  # Required for rate limiter - must be named 'request'
     use_case: AnalyzeArticleUseCase = Depends(get_analyze_use_case),
 ) -> AnalysisResponse:
     """
@@ -40,9 +40,9 @@ async def analyze_article(
 
     try:
         analysis = await use_case.execute(
-            url=str(request.url),
-            force_refresh=request.force_refresh,
-            include_points=request.include_points,
+            url=str(body.url),
+            force_refresh=body.force_refresh,
+            include_points=body.include_points,
         )
 
         processing_time = int((time.time() - start_time) * 1000)
@@ -87,8 +87,8 @@ async def analyze_article(
 @router.post("/related", response_model=RelatedArticlesResponse)
 @limiter.limit(RELATED_LIMIT)
 async def find_related_articles(
-    request: FindRelatedRequest,
-    http_request: Request,  # Required for rate limiter
+    body: FindRelatedRequest,
+    request: Request,  # Required for rate limiter - must be named 'request'
     use_case: FindRelatedUseCase | None = Depends(get_find_related_use_case),
 ) -> RelatedArticlesResponse:
     """
@@ -106,11 +106,11 @@ async def find_related_articles(
 
     try:
         keywords, articles = await use_case.execute(
-            url=str(request.url) if request.url else None,
-            keywords=request.keywords,
-            topic=request.topic,
-            limit=request.limit,
-            days_back=request.days_back,
+            url=str(body.url) if body.url else None,
+            keywords=body.keywords,
+            topic=body.topic,
+            limit=body.limit,
+            days_back=body.days_back,
         )
 
         return RelatedArticlesResponse(
