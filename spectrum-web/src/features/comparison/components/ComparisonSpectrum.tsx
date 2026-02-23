@@ -14,7 +14,7 @@ export function ComparisonSpectrum({ articles }: ComparisonSpectrumProps) {
 
       {/* Article markers */}
       <div className="absolute inset-x-0 top-0 h-4 flex items-center">
-        {articles.map((article, index) => {
+        {articles.map((article) => {
           const percent = scoreToPercent(article.political_leaning.score)
           const color = getColor(article.political_leaning.score)
 

@@ -14,7 +14,7 @@ import type { ArticleAnalysis } from '@/lib/api/client'
 function App() {
   const [url, setUrl] = useState('')
   const [analyzedUrl, setAnalyzedUrl] = useState<string | null>(null)
-  const { mutate: analyze, data, isPending, error, reset } = useAnalyzeArticle()
+  const { mutate: analyze, data, isPending, error } = useAnalyzeArticle()
   const { data: relatedData, isLoading: relatedLoading } = useFindRelated(analyzedUrl)
 
   // Comparison state

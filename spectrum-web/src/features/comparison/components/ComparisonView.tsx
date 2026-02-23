@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import type { ArticleAnalysis, ArticleComparisonPair } from '@/lib/api/client'
 import { ComparisonSpectrum } from './ComparisonSpectrum'
 import { ComparisonSummary } from './ComparisonSummary'
+import { SideBySideView } from './SideBySideView'
+import { DetailLevelToggle, type DetailLevel } from './DetailLevelToggle'
 import { getLabel } from '@/features/spectrum/utils/spectrumColors'
 
 interface ComparisonViewProps {
@@ -18,8 +21,11 @@ export function ComparisonView({
   contestedPoints,
   overallSummary,
 }: ComparisonViewProps) {
+  const [detailLevel, setDetailLevel] = useState<DetailLevel>('summary')
+
   // Check if any pair is the same story
   const sameStoryPair = pairwiseComparisons.find(p => p.same_story)
+
   // Calculate spread
   const scores = articles.map((a) => a.political_leaning.score)
   const leaningSpread = Math.max(...scores) - Math.min(...scores)
@@ -39,7 +45,7 @@ export function ComparisonView({
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Comparison: {articles.length} Articles
@@ -48,18 +54,25 @@ export function ComparisonView({
               Comparing coverage from {articles.map((a) => a.source_name).join(', ')}
             </p>
           </div>
-          {sameStoryPair && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>Same Story</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {sameStoryPair && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Same Story</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Detail Level Toggle */}
+        <div className="mt-4">
+          <DetailLevelToggle level={detailLevel} onChange={setDetailLevel} />
         </div>
       </div>
 
-      {/* Spectrum Visualization */}
+      {/* Spectrum Visualization - Always shown */}
       <div className="p-6 bg-gray-50 dark:bg-gray-900/50">
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
           Political Spectrum Positions
@@ -95,15 +108,30 @@ export function ComparisonView({
         </div>
       </div>
 
-      {/* Summary */}
+      {/* Content based on detail level */}
       <div className="p-6">
-        <ComparisonSummary
-          leaningSpread={leaningSpread}
-          commonTopics={commonTopics}
-          agreements={consensusPoints}
-          disagreements={contestedPoints}
-          overallSummary={overallSummary}
-        />
+        {detailLevel === 'summary' && (
+          <ComparisonSummary
+            leaningSpread={leaningSpread}
+            commonTopics={commonTopics}
+            agreements={consensusPoints}
+            disagreements={contestedPoints}
+            overallSummary={overallSummary}
+          />
+        )}
+
+        {detailLevel === 'side-by-side' && (
+          <SideBySideView
+            articles={articles}
+            pairwiseComparisons={pairwiseComparisons}
+          />
+        )}
+
+        {detailLevel === 'diff' && (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <p>Detailed topic-by-topic view coming soon...</p>
+          </div>
+        )}
       </div>
     </div>
   )
