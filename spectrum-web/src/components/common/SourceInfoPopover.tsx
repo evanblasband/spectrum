@@ -109,7 +109,7 @@ export function SourceInfoPopover({ supported, partial = [], blocked }: SourceIn
       {isOpen && (
         <div
           ref={popoverRef}
-          className="absolute z-50 right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+          className="absolute z-[100] right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
           role="dialog"
           aria-label="Supported news sources"
         >
