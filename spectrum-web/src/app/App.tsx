@@ -10,9 +10,29 @@ import { ComparisonView } from '@/features/comparison/components/ComparisonView'
 import { ComparisonTray } from '@/features/comparison/components/ComparisonTray'
 import { useCompareArticles } from '@/features/comparison/hooks/useCompareArticles'
 import { ErrorMessage } from '@/components/common/ErrorMessage'
-import type { ArticleAnalysis } from '@/lib/api/client'
+import { MarkdownViewer } from '@/components/docs'
+import type { ArticleAnalysis, DocName } from '@/lib/api/client'
+
+// Navigation tabs configuration
+type TabId = 'app' | 'readme' | 'prd' | 'architecture' | 'diagrams' | 'tech-decisions'
+
+interface Tab {
+  id: TabId
+  label: string
+  docName?: DocName
+}
+
+const TABS: Tab[] = [
+  { id: 'app', label: 'Analyzer' },
+  { id: 'readme', label: 'README', docName: 'readme' },
+  { id: 'prd', label: 'PRD', docName: 'prd' },
+  { id: 'architecture', label: 'Architecture', docName: 'architecture' },
+  { id: 'diagrams', label: 'Diagrams', docName: 'diagrams' },
+  { id: 'tech-decisions', label: 'Tech Decisions', docName: 'tech-decisions' },
+]
 
 function App() {
+  const [activeTab, setActiveTab] = useState<TabId>('app')
   const [url, setUrl] = useState('')
   const [analyzedUrl, setAnalyzedUrl] = useState<string | null>(null)
   const { mutate: analyze, data, isPending, error } = useAnalyzeArticle()
@@ -88,32 +108,67 @@ function App() {
 
   const hasArticlesInTray = selectedArticles.length > 0
 
+  // Check if we're on a documentation page
+  const isDocPage = activeTab !== 'app'
+  const currentTab = TABS.find(t => t.id === activeTab)
+
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 ${hasArticlesInTray ? 'pb-32' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 ${hasArticlesInTray && !isDocPage ? 'pb-32' : ''}`}>
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Spectrum
-          </h1>
-          <p className="mt-1 text-slate-600 dark:text-slate-400">
-            Understand where news articles fall on the political spectrum
-          </p>
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-between py-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                Spectrum
+              </h1>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Political News Analyzer
+              </p>
+            </div>
+
+            {/* Navigation Tabs */}
+            <nav className="flex items-center gap-1">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Input Form */}
-        <div className="mb-8">
-          <UrlInputForm
-            onSubmit={handleAnalyze}
-            isLoading={isPending}
-            disabled={isPending}
-            value={url}
-            onChange={setUrl}
-          />
-        </div>
+      {/* Documentation Page */}
+      {isDocPage && currentTab?.docName && (
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8">
+            <MarkdownViewer docName={currentTab.docName} />
+          </div>
+        </main>
+      )}
+
+      {/* Analyzer Page */}
+      {!isDocPage && (
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          {/* Input Form */}
+          <div className="mb-8">
+            <UrlInputForm
+              onSubmit={handleAnalyze}
+              isLoading={isPending}
+              disabled={isPending}
+              value={url}
+              onChange={setUrl}
+            />
+          </div>
 
         {/* Comparison View */}
         {showComparison && (
@@ -233,18 +288,19 @@ function App() {
           </div>
         )}
 
-        {/* Disclaimer */}
-        <div className="mt-12 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm text-slate-600 dark:text-slate-400">
-          <p>
-            <strong>Disclaimer:</strong> This analysis is generated by AI and represents
-            one interpretation of the article's content. Political spectrum placement is
-            inherently subjective. Use this tool as one of many resources for media literacy.
-          </p>
-        </div>
-      </main>
+          {/* Disclaimer */}
+          <div className="mt-12 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm text-slate-600 dark:text-slate-400">
+            <p>
+              <strong>Disclaimer:</strong> This analysis is generated by AI and represents
+              one interpretation of the article's content. Political spectrum placement is
+              inherently subjective. Use this tool as one of many resources for media literacy.
+            </p>
+          </div>
+        </main>
+      )}
 
-      {/* Comparison Tray */}
-      {!showComparison && (
+      {/* Comparison Tray - only show on analyzer page */}
+      {!isDocPage && !showComparison && (
         <ComparisonTray onCompare={handleCompare} isComparing={isComparing} />
       )}
     </div>

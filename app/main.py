@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from app.api.errors import StructuredHTTPException
 from app.api.middleware.error_handler import ErrorHandlerMiddleware
 from app.api.middleware.logging import LoggingMiddleware
-from app.api.routes import articles, comparisons, health
+from app.api.routes import articles, comparisons, docs, health
 from app.config import get_settings
 from app.core.errors import ERROR_SUGGESTIONS, RETRYABLE_ERRORS
 
@@ -83,6 +83,7 @@ async def structured_exception_handler(
 app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(articles.router, prefix=settings.api_prefix)
 app.include_router(comparisons.router, prefix=settings.api_prefix)
+app.include_router(docs.router, prefix=settings.api_prefix)
 
 
 @app.get("/")

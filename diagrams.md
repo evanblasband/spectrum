@@ -296,11 +296,11 @@ flowchart LR
 
     FL --- L --- C --- R --- FR
 
-    style FL fill:#6366f1
-    style L fill:#8b5cf6
-    style C fill:#a855f7
-    style R fill:#ec4899
-    style FR fill:#f43f5e
+    style FL fill:#1e40af
+    style L fill:#3b82f6
+    style C fill:#64748b
+    style R fill:#f97316
+    style FR fill:#ea580c
 ```
 
 ## Comparison View Levels
