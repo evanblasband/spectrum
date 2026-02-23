@@ -22,6 +22,26 @@ This section tracks changes to technology decisions over time. Each entry includ
 
 ### Change Log
 
+#### 2026-02-22 - Documentation Viewer - In-App Documentation with Mermaid Support
+**Previous**: Documentation only accessible via repository files
+**New**: In-app documentation viewer with navigation tabs and Mermaid diagram rendering
+**Trigger**: Need for users to easily access project documentation without leaving the app
+**Reasoning**: Integrating documentation into the app improves discoverability and provides a professional portfolio presentation. Using react-markdown with remark-gfm provides full GitHub-flavored markdown support, and mermaid.js handles architecture diagrams.
+**Migration notes**: Added `/api/v1/docs/{doc_name}` endpoint, created `MarkdownViewer` and `MermaidDiagram` components, added header navigation tabs
+**Lessons**: Mermaid has poor dark mode support - forcing a light background on diagram containers ensures consistent readability across themes.
+
+---
+
+#### 2026-02-22 - UI Color Scheme - Neutral Professional Palette
+**Previous**: Gray with violet/purple accents
+**New**: Slate grays with blue accents, blue→slate→orange political spectrum
+**Trigger**: Violet/purple felt too branded; wanted a more neutral, professional aesthetic
+**Reasoning**: Slate provides a more sophisticated neutral base. Blue and orange for the political spectrum are neutral (avoiding red/blue partisan associations) while maintaining visual clarity. Blue-to-slate-to-orange gradient clearly shows left-center-right positioning.
+**Migration notes**: Updated all Tailwind classes from `gray-*` to `slate-*`, `violet-*` to `blue-*`, updated `spectrumColors.ts` gradient
+**Lessons**: Color scheme affects perceived professionalism. Neutral colors work better for tools meant to be unbiased.
+
+---
+
 #### 2026-02-18 - HTTP Client - HTTP/2 Required for News Sites
 **Previous**: HTTP/1.1 requests (httpx default)
 **New**: HTTP/2 enabled with `h2` package
@@ -78,6 +98,7 @@ Copy this template when recording a decision change:
 12. [HTTP Client](#12-http-client)
 13. [Architecture Patterns](#13-architecture-patterns)
 14. [Containerization](#14-containerization)
+15. [Markdown & Diagram Rendering](#15-markdown--diagram-rendering)
 
 ---
 
@@ -682,3 +703,63 @@ When making technology decisions, we considered:
 | Optimize for developer productivity | Vite, Tailwind, Zustand all prioritize DX |
 
 These decisions work well for Spectrum's current scope. As requirements evolve, the abstractions in place make it straightforward to swap implementations or add complexity where needed.
+
+---
+
+## 15. Markdown & Diagram Rendering
+
+### Decision: react-markdown + remark-gfm + mermaid
+
+### Why this combination?
+
+| Library | Purpose |
+|---------|---------|
+| **react-markdown** | Core markdown rendering in React |
+| **remark-gfm** | GitHub-flavored markdown (tables, strikethrough, autolinks) |
+| **mermaid** | Diagram rendering for architecture visualization |
+
+### Alternatives Considered
+
+| Library | Consideration |
+|---------|---------------|
+| **marked** | Fast but no React integration, requires dangerouslySetInnerHTML |
+| **markdown-it** | Flexible but more setup for React |
+| **rehype-mermaid** | SSR-focused, complex setup for client-side rendering |
+| **D3.js** | More flexible diagrams but significant learning curve |
+
+### Key Benefits for This Project
+- **Native React**: react-markdown outputs React elements, not raw HTML
+- **Extensible**: Custom component renderers for code blocks, headings, etc.
+- **GFM support**: Tables work out of the box with remark-gfm
+- **Mermaid integration**: Detect ```mermaid code blocks and render diagrams
+
+### Mermaid Theme Considerations
+
+Mermaid has limited dark mode support. Key decisions:
+- **Force light background** on diagram containers (not affected by page dark mode)
+- **Custom theme variables** for high-contrast text readability
+- **Explicit colors** for nodes, text, and lines to ensure visibility
+
+```typescript
+// Mermaid theme configuration for readability
+mermaid.initialize({
+  theme: 'base',
+  themeVariables: {
+    background: '#ffffff',
+    textColor: '#0f172a',      // Very dark text
+    primaryColor: '#3b82f6',   // Blue nodes
+    primaryTextColor: '#ffffff', // White text on blue
+    // ... extensive theme configuration
+  }
+})
+```
+
+### Tradeoffs
+- **Bundle size**: mermaid adds ~500KB (acceptable for documentation feature)
+- **Dark mode limitation**: Diagrams always render on light background
+- **Performance**: Large diagrams can slow rendering
+
+### When to choose differently
+- Server-side rendering needs → rehype-mermaid or pre-rendered SVGs
+- Interactive diagrams needed → D3.js or custom SVG
+- Maximum performance → Pre-render diagrams at build time

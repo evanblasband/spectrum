@@ -183,12 +183,22 @@ flowchart TB
         QP[QueryClientProvider<br/>TanStack Query]
     end
 
+    subgraph Navigation["Header Navigation"]
+        NavTabs[Tab Navigation<br/>Analyzer | README | PRD | Architecture | Diagrams | Tech Decisions]
+        GitHubBtn[GitHub Button]
+    end
+
     subgraph MainUI["Main App UI"]
-        Header[Header]
+        AppSummary[App Summary]
         URLInput[UrlInputForm]
-        CompBar[Comparison Bar<br/>Selected Articles]
         Results[Results Section]
         Disclaimer[Disclaimer]
+        CompTray[ComparisonTray<br/>Bottom tray for selected articles]
+    end
+
+    subgraph DocsUI["Documentation UI"]
+        MarkdownViewer[MarkdownViewer]
+        MermaidDiagram[MermaidDiagram]
     end
 
     subgraph ResultsSection["Results Display"]
@@ -216,7 +226,7 @@ flowchart TB
     end
 
     subgraph SpectrumParts["Spectrum Parts"]
-        Scale[SpectrumScale]
+        Scale[SpectrumScale<br/>Blue→Slate→Orange]
         Marker[SpectrumMarker]
         Labels[SpectrumLabels]
         Mini[MiniSpectrum]
@@ -224,12 +234,16 @@ flowchart TB
 
     subgraph State["State Management"]
         RQ[TanStack Query<br/>Server State]
-        Zustand[useComparisonStore<br/>Zustand]
+        Zustand[useComparisonStore<br/>useSearchHistory<br/>Zustand]
     end
 
     App --> Providers
+    App --> Navigation
     Providers --> MainUI
+    Providers --> DocsUI
     Results --> ResultsSection
+
+    MarkdownViewer --> MermaidDiagram
 
     AnalysisCard --> AnalysisComponents
     RelatedSection --> RelatedComponents

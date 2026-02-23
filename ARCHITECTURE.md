@@ -33,6 +33,7 @@ spectrum/
 │   │   │   ├── __init__.py
 │   │   │   ├── articles.py        # Article analysis + related endpoints
 │   │   │   ├── comparisons.py     # Article comparison endpoints
+│   │   │   ├── docs.py            # Documentation serving endpoint
 │   │   │   └── health.py          # Health check endpoints
 │   │   └── middleware/
 │   │       ├── __init__.py
@@ -102,7 +103,7 @@ spectrum-web/
 │   ├── index.css                  # Global styles (Tailwind)
 │   │
 │   ├── app/
-│   │   ├── App.tsx                # Root component with main UI
+│   │   ├── App.tsx                # Root component with navigation tabs
 │   │   └── providers/
 │   │       └── index.tsx          # React Query provider setup
 │   │
@@ -115,7 +116,7 @@ spectrum-web/
 │   │   │   │   ├── ConfidenceIndicator.tsx
 │   │   │   │   └── MiniSpectrum.tsx
 │   │   │   ├── utils/
-│   │   │   │   └── spectrumColors.ts
+│   │   │   │   └── spectrumColors.ts  # Blue→Slate→Orange gradient
 │   │   │   └── index.ts
 │   │   │
 │   │   ├── analysis/              # Article analysis feature
@@ -139,14 +140,19 @@ spectrum-web/
 │   │       ├── components/
 │   │       │   ├── ComparisonView.tsx
 │   │       │   ├── ComparisonSummary.tsx
-│   │       │   └── ComparisonSpectrum.tsx
+│   │       │   ├── ComparisonSpectrum.tsx
+│   │       │   └── ComparisonTray.tsx  # Bottom tray for collecting articles
 │   │       └── index.ts
 │   │
 │   ├── components/
-│   │   └── common/                # Shared UI components
-│   │       ├── LoadingSpinner.tsx
-│   │       ├── ErrorMessage.tsx
-│   │       └── Disclaimer.tsx
+│   │   ├── common/                # Shared UI components
+│   │   │   ├── LoadingSpinner.tsx
+│   │   │   ├── ErrorMessage.tsx
+│   │   │   └── Disclaimer.tsx
+│   │   └── docs/                  # Documentation viewer components
+│   │       ├── MarkdownViewer.tsx # Renders markdown with remark-gfm
+│   │       ├── MermaidDiagram.tsx # Renders Mermaid diagrams
+│   │       └── index.ts
 │   │
 │   ├── stores/
 │   │   ├── useComparisonStore.ts  # Zustand store for article comparison
@@ -189,6 +195,17 @@ GET  /articles/{analysis_id}    # Get cached analysis by ID
 POST /articles/analyze/text     # Analyze raw text (no URL)
      Body: { "title": "string", "content": "string", "source": "string" }
      Response: ArticleAnalysis
+
+GET  /articles/sources          # Get supported/blocked sources list
+     Response: { supported: [...], partial: [...], blocked: [...] }
+```
+
+### Documentation
+
+```
+GET  /docs/{doc_name}           # Get documentation content
+     doc_name: readme | prd | architecture | diagrams | tech-decisions
+     Response: { name: string, filename: string, content: string }
 ```
 
 ### Related Articles

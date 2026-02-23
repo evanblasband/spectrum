@@ -57,13 +57,19 @@ The frontend will be available at `http://localhost:5173`
 spectrum/
 ├── app/                    # Python backend (FastAPI)
 │   ├── api/                # API routes
+│   │   └── routes/         # articles, comparisons, docs, health
 │   ├── core/               # Business logic
 │   ├── services/           # External integrations
 │   └── schemas/            # Data models
 ├── spectrum-web/           # React frontend
 │   └── src/
-│       ├── features/       # Feature modules
-│       └── components/     # Shared components
+│       ├── app/            # App.tsx with navigation tabs
+│       ├── features/       # Feature modules (analysis, spectrum, comparison, related-articles)
+│       ├── components/     # Shared components
+│       │   ├── common/     # ErrorMessage, LoadingSpinner, etc.
+│       │   └── docs/       # MarkdownViewer, MermaidDiagram
+│       ├── stores/         # Zustand stores (comparison, search history)
+│       └── lib/            # API client
 ├── docker/                 # Docker configuration
 ├── prd.md                  # Product Requirements Document
 ├── ARCHITECTURE.md         # Backend Architecture Guide
@@ -119,6 +125,7 @@ The architecture document provides detailed technical design:
 | `/api/v1/articles/related` | POST | Find related articles |
 | `/api/v1/articles/sources` | GET | Get supported/blocked sources list |
 | `/api/v1/comparisons` | POST | Compare multiple articles |
+| `/api/v1/docs/{doc_name}` | GET | Get documentation (readme, prd, architecture, diagrams, tech-decisions) |
 
 ## News Source Compatibility
 
@@ -183,6 +190,7 @@ DEBUG=true
 
 - **Article Analysis**: Paste any news article URL to get political spectrum analysis
   - Score from -1 (far left) to +1 (far right)
+  - Political spectrum visualization with blue (left) → slate (center) → orange (right) gradient
   - Confidence indicator with info tooltip explaining methodology
   - Brief article summary generated from topics and key points
   - AI-generated reasoning for the political score
@@ -200,10 +208,17 @@ DEBUG=true
   - Clear all history option
 
 - **Article Comparison**: Compare multiple articles side-by-side
-  - Add analyzed articles to comparison list
+  - Comparison tray at bottom of screen for collecting articles
+  - Add analyzed articles or related articles to comparison
   - Visual spectrum showing all articles' positions
   - Summary of political spread
   - Shared topics identification
+
+- **Documentation Viewer**: In-app access to project documentation
+  - Navigate via tabs in header: README, PRD, Architecture, Diagrams, Tech Decisions
+  - Full markdown rendering with syntax highlighting
+  - Mermaid diagram support for architecture visualizations
+  - GitHub repository link in header
 
 ### Not Yet Implemented
 

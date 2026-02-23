@@ -110,10 +110,31 @@ Empower readers to understand media bias and seek diverse perspectives on the ne
 - Confidence range visualization (subtle blur/range indicator)
 
 **Visual Elements:**
-- Gradient track (cool to warm, not partisan colors)
+- Gradient track: Blue (left) → Slate (center) → Orange (right)
+  - Far Left: `#1e40af` (Blue-800)
+  - Left: `#2563eb` (Blue-600)
+  - Slight Left: `#3b82f6` (Blue-500)
+  - Center: `#64748b` (Slate-500)
+  - Slight Right: `#f59e0b` (Amber-500)
+  - Right: `#f97316` (Orange-500)
+  - Far Right: `#ea580c` (Orange-600)
 - Marker showing article position
 - Labels at key positions (-1, -0.5, 0, +0.5, +1)
 - Confidence indicator badge
+
+### 5. Documentation Viewer (Implemented)
+
+**Functionality:**
+- In-app access to all project documentation via header tabs
+- Documents available: README, PRD, Architecture, Diagrams, Tech Decisions
+- Full markdown rendering with GitHub-flavored markdown support
+- Mermaid diagram rendering for architecture visualizations
+- GitHub repository link in header
+
+**Technical Implementation:**
+- Backend: `/api/v1/docs/{doc_name}` endpoint serves markdown files
+- Frontend: `MarkdownViewer` component with react-markdown and remark-gfm
+- Diagrams: `MermaidDiagram` component with custom light theme for readability
 
 ---
 
@@ -200,8 +221,10 @@ spectrum/
 |----------|--------|-------------|
 | `/api/v1/articles/analyze` | POST | Analyze article from URL |
 | `/api/v1/articles/related` | POST | Find related articles |
+| `/api/v1/articles/sources` | GET | Get supported/blocked sources list |
 | `/api/v1/comparisons` | POST | Compare 2-5 articles |
 | `/api/v1/comparisons/with-related` | POST | Full workflow: analyze + find + compare |
+| `/api/v1/docs/{doc_name}` | GET | Get documentation content |
 | `/api/v1/health` | GET | Health check |
 
 ---
@@ -233,11 +256,14 @@ spectrum-web/
 | Component | Purpose |
 |-----------|---------|
 | `UrlInputForm` | Primary entry point for analysis |
-| `SpectrumScale` | Core visualization component |
+| `SpectrumScale` | Core visualization component (blue→slate→orange gradient) |
 | `ConfidenceIndicator` | Shows reliability of analysis |
 | `RelatedArticleCard` | Preview of related article with mini-spectrum |
 | `ComparisonView` | Progressive disclosure comparison (3 levels) |
+| `ComparisonTray` | Bottom tray for collecting articles to compare |
 | `DetailLevelToggle` | Switch between Summary/Side-by-Side/Diff |
+| `MarkdownViewer` | Documentation renderer with Mermaid support |
+| `MermaidDiagram` | Renders Mermaid diagrams with custom theme |
 
 ### State Management
 
@@ -410,9 +436,11 @@ DEBUG=true
 - **AI provider**: Groq free tier (swappable)
 - **Spectrum type**: Simple left-right scale
 - **Auth**: None for MVP, optional accounts later
+- **Gradient colors**: Blue (left) → Slate (center) → Orange (right) - chosen for neutrality
+- **Color scheme**: Slate grays with blue accents (professional, neutral aesthetic)
+- **Loading animation**: Spinning border animation
+- **Error handling**: Structured error responses with user-friendly messages and retry options
 
 ### To Decide During Implementation
-- Exact gradient colors for spectrum visualization
-- Loading animation style
-- Error message tone/wording
 - Rate limiting strategy for API
+- User feedback mechanism for analysis accuracy
