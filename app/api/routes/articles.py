@@ -3,11 +3,12 @@
 import logging
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from tenacity import RetryError
 
 from app.api.deps import get_analyze_use_case, get_find_related_use_case
 from app.api.errors import raise_structured_error
+from app.api.middleware.rate_limit import limiter, ANALYZE_LIMIT, RELATED_LIMIT
 from app.core.errors import ErrorCode
 from app.core.interfaces.article_fetcher import ArticleFetchError
 from app.services.fetchers.web_scraper import RetryableError, SUPPORTED_SITES, BLOCKED_SITES, PARTIAL_SUPPORT_SITES
@@ -21,8 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
+@limiter.limit(ANALYZE_LIMIT)
 async def analyze_article(
     request: AnalyzeArticleRequest,
+    http_request: Request,  # Required for rate limiter
     use_case: AnalyzeArticleUseCase = Depends(get_analyze_use_case),
 ) -> AnalysisResponse:
     """
@@ -82,8 +85,10 @@ async def analyze_article(
 
 
 @router.post("/related", response_model=RelatedArticlesResponse)
+@limiter.limit(RELATED_LIMIT)
 async def find_related_articles(
     request: FindRelatedRequest,
+    http_request: Request,  # Required for rate limiter
     use_case: FindRelatedUseCase | None = Depends(get_find_related_use_case),
 ) -> RelatedArticlesResponse:
     """

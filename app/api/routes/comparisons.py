@@ -4,9 +4,10 @@ import logging
 import time
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.api.deps import get_analyze_use_case, get_ai_provider, get_cache
+from app.api.middleware.rate_limit import limiter, COMPARE_LIMIT
 from app.core.entities.comparison import MultiArticleComparison
 from app.core.interfaces.ai_provider import AIProviderInterface
 from app.core.interfaces.cache import CacheInterface
@@ -32,8 +33,10 @@ def get_compare_use_case(
 
 
 @router.post("", response_model=MultiArticleComparison)
+@limiter.limit(COMPARE_LIMIT)
 async def compare_articles(
     request: CompareArticlesRequest,
+    http_request: Request,  # Required for rate limiter
     use_case: CompareArticlesUseCase = Depends(get_compare_use_case),
 ) -> MultiArticleComparison:
     """

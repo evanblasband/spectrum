@@ -22,6 +22,16 @@ This section tracks changes to technology decisions over time. Each entry includ
 
 ### Change Log
 
+#### 2026-02-23 - Rate Limiting - slowapi for API Protection
+**Previous**: No rate limiting
+**New**: slowapi with endpoint-specific limits (10/min analyze, 5/min compare, 20/min related)
+**Trigger**: Preparing for public deployment - need to protect against abuse and API cost overruns
+**Reasoning**: slowapi is the standard FastAPI rate limiting library. Different limits per endpoint match their costs (AI calls are expensive, docs are cheap). In-memory storage works for single-instance free tier deployments.
+**Migration notes**: Added slowapi to requirements.txt, created rate_limit.py middleware, decorated expensive endpoints
+**Lessons**: Rate limits should be based on actual costs/constraints. AI endpoints need stricter limits than read-only endpoints.
+
+---
+
 #### 2026-02-22 - Documentation Viewer - In-App Documentation with Mermaid Support
 **Previous**: Documentation only accessible via repository files
 **New**: In-app documentation viewer with navigation tabs and Mermaid diagram rendering

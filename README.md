@@ -231,10 +231,11 @@ DEBUG=true
 
 ### Roadmap / Planned Work
 
-- [ ] **Better error handling** - Improve error messages and user notifications throughout the app (network errors, API failures, scraping issues)
+- [x] **Rate limiting** - API rate limits to prevent abuse (10 analyze/min, 5 compare/min)
+- [x] **Docker deployment** - Production-ready Docker configuration with multi-stage builds
+- [x] **Hosting setup** - Render blueprint for easy deployment
 - [ ] **Fix comparison feature** - Investigate and fix issues with the article comparison functionality
 - [ ] **Security audit** - Review input validation, XSS prevention, API key handling, dependency vulnerabilities
-- [ ] **Hosting setup** - Deploy to a hosting platform (Railway, Render, Vercel) for portfolio demonstration
 
 ## Tech Stack
 
@@ -244,3 +245,65 @@ DEBUG=true
 - **News Data**: NewsAPI.org
 - **State Management**: Zustand + TanStack Query
 - **Caching**: In-memory with TTL (cachetools)
+- **Rate Limiting**: slowapi (10 analyze/min, 5 compare/min, 20 related/min)
+
+## Deployment
+
+### Docker (Local)
+
+```bash
+# Development (with hot reload)
+cd docker
+docker compose up
+
+# Production build (local testing)
+docker compose -f docker-compose.prod.yml up
+```
+
+### Render (Recommended for free hosting)
+
+The project includes a `render.yaml` blueprint:
+
+1. Connect your GitHub repo to [Render](https://render.com)
+2. Render auto-detects the blueprint and creates services
+3. Add environment variables in Render dashboard:
+   - `GROQ_API_KEY` - your Groq API key
+   - `NEWSAPI_KEY` - your NewsAPI key
+4. Deploy
+
+**Note**: Free tier sleeps after 15 minutes of inactivity. First request after sleep takes ~30 seconds.
+
+### Manual Deployment
+
+**Backend** (any Docker host):
+```bash
+# Build
+docker build -t spectrum-api -f docker/Dockerfile --target production .
+
+# Run
+docker run -p 8000:8000 \
+  -e GROQ_API_KEY=your_key \
+  -e NEWSAPI_KEY=your_key \
+  -e ALLOWED_ORIGINS='["https://your-frontend.com"]' \
+  spectrum-api
+```
+
+**Frontend** (any static host - Vercel, Netlify, Cloudflare Pages):
+```bash
+cd spectrum-web
+VITE_API_URL=https://your-api-url.com npm run build
+# Deploy the `dist` folder
+```
+
+### Rate Limits
+
+The API enforces rate limits to prevent abuse:
+
+| Endpoint | Limit | Reason |
+|----------|-------|--------|
+| `/articles/analyze` | 10/minute | AI API costs |
+| `/comparisons` | 5/minute | Multiple AI calls |
+| `/articles/related` | 20/minute | NewsAPI limits |
+| Other endpoints | 100/minute | General protection |
+
+Rate limit errors return HTTP 429 with retry information

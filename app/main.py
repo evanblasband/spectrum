@@ -7,10 +7,13 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.api.errors import StructuredHTTPException
 from app.api.middleware.error_handler import ErrorHandlerMiddleware
 from app.api.middleware.logging import LoggingMiddleware
+from app.api.middleware.rate_limit import limiter, rate_limit_exceeded_handler
 from app.api.routes import articles, comparisons, docs, health
 from app.config import get_settings
 from app.core.errors import ERROR_SUGGESTIONS, RETRYABLE_ERRORS
@@ -46,6 +49,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 # Middleware (order matters - last added is first executed)
 app.add_middleware(
