@@ -16,7 +16,7 @@ export function ColdStartBanner() {
   // Error state
   if (status === 'error') {
     return (
-      <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+      <div className="bg-red-50 dark:bg-red-900 border-b border-red-200 dark:border-red-800">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -43,7 +43,7 @@ export function ColdStartBanner() {
 
   // Waking state - friendly cold start message
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+    <div className="bg-blue-50 dark:bg-blue-900 border-b border-blue-200 dark:border-blue-800">
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
