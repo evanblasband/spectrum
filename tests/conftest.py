@@ -69,6 +69,7 @@ def sample_analysis():
             secondary_topics=["Economy", "Policy"],
             keywords=["government", "policy", "economy", "reform"],
             entities=["Congress", "Senate"],
+            story_identifier="Economic reform policy announcement 2026",
         ),
         key_points=[
             ArticlePoint(
@@ -117,6 +118,7 @@ def mock_ai_provider():
     ]
 
     mock.compare_points.return_value = []
+    mock.compare_story_identifiers.return_value = (True, 0.85)
     mock.health_check.return_value = True
 
     return mock

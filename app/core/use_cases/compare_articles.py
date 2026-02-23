@@ -82,6 +82,9 @@ class CompareArticlesUseCase:
         depth: str,
     ) -> ArticleComparisonPair:
         """Compare two articles."""
+        # Check if articles cover the same story
+        same_story, same_story_confidence = await self._are_same_story(a, b)
+
         # Calculate leaning difference
         leaning_diff = abs(a.political_leaning.score - b.political_leaning.score)
         leaning_summary = self._summarize_leaning_difference(
@@ -118,6 +121,8 @@ class CompareArticlesUseCase:
         return ArticleComparisonPair(
             article_a_id=a.article_id,
             article_b_id=b.article_id,
+            same_story=same_story,
+            same_story_confidence=same_story_confidence,
             leaning_difference=leaning_diff,
             leaning_summary=leaning_summary,
             shared_topics=shared,
@@ -126,6 +131,32 @@ class CompareArticlesUseCase:
             agreements=agreements,
             disagreements=disagreements,
         )
+
+    async def _are_same_story(
+        self,
+        a: ArticleAnalysis,
+        b: ArticleAnalysis,
+    ) -> tuple[bool, float]:
+        """Determine if two articles cover the same news story."""
+        # If either lacks a story_identifier, fall back to topic matching
+        if not a.topics.story_identifier or not b.topics.story_identifier:
+            logger.debug("Missing story_identifier, falling back to topic comparison")
+            return False, 0.0
+
+        # Use AI to compare story identifiers
+        same_story, confidence = await self.ai.compare_story_identifiers(
+            a.topics.story_identifier,
+            b.topics.story_identifier,
+            a.article_title,
+            b.article_title,
+        )
+
+        logger.info(
+            f"Story comparison for '{a.article_title}' vs '{b.article_title}': "
+            f"same_story={same_story}, confidence={confidence}"
+        )
+
+        return same_story, confidence
 
     def _summarize_leaning_difference(self, score_a: float, score_b: float) -> str:
         """Generate summary of leaning difference."""

@@ -30,6 +30,7 @@ class TopicAnalysis(BaseModel):
     secondary_topics: list[str] = []
     keywords: list[str] = Field(default_factory=list)
     entities: list[str] = []  # Named entities (people, organizations)
+    story_identifier: Optional[str] = None  # Canonical story/event identifier
 
 
 class ArticlePoint(BaseModel):

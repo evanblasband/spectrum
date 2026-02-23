@@ -103,11 +103,21 @@ Content: {content[:6000]}
 
 Respond with JSON:
 {{
-    "primary_topic": "<main topic>",
+    "primary_topic": "<main topic category>",
     "secondary_topics": ["<topic1>", "<topic2>"],
     "keywords": ["<keyword1>", "<keyword2>", ...],
-    "entities": ["<person/org name>", ...]
+    "entities": ["<person/org name>", ...],
+    "story_identifier": "<specific news story/event this covers>"
 }}
+
+IMPORTANT for story_identifier:
+- Be specific about WHAT happened, not just the topic area
+- Include relevant context (who, what, when if apparent)
+- Examples:
+  - Good: "ICE 287g program expansion under Trump February 2026"
+  - Bad: "Immigration policy" (too vague)
+  - Good: "Senate climate bill vote fails March 2026"
+  - Bad: "Climate change" (too vague)
 
 Keywords should be specific enough to find related articles. Include no more than 10 keywords.
 Entities should be named entities (people, organizations, places).
@@ -172,5 +182,31 @@ Find agreements and disagreements. Respond with JSON:
 }}
 
 Only include comparisons where there is a meaningful relationship.
+
+Respond ONLY with valid JSON."""
+
+    def _get_compare_story_identifiers_prompt(
+        self,
+        story_a: str,
+        story_b: str,
+        title_a: str,
+        title_b: str,
+    ) -> str:
+        """Generate prompt for comparing story identifiers."""
+        return f"""Do these two articles cover the same news story or event?
+
+Article A:
+- Title: {title_a}
+- Story: {story_a}
+
+Article B:
+- Title: {title_b}
+- Story: {story_b}
+
+Answer with JSON:
+{{"same_story": true/false, "confidence": 0.0-1.0, "reasoning": "brief explanation"}}
+
+Consider them the "same story" if they cover the same underlying news event,
+even if from different angles or with different framing.
 
 Respond ONLY with valid JSON."""

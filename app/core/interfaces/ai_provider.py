@@ -68,6 +68,22 @@ class AIProviderInterface(ABC):
         pass
 
     @abstractmethod
+    async def compare_story_identifiers(
+        self,
+        story_a: str,
+        story_b: str,
+        title_a: str,
+        title_b: str,
+    ) -> tuple[bool, float]:
+        """
+        Determine if two story identifiers refer to the same news event.
+
+        Returns:
+            Tuple of (same_story: bool, confidence: float)
+        """
+        pass
+
+    @abstractmethod
     async def health_check(self) -> bool:
         """Check if provider is available."""
         pass

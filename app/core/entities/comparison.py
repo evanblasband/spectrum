@@ -11,6 +11,10 @@ class ArticleComparisonPair(BaseModel):
     article_a_id: str
     article_b_id: str
 
+    # Same story detection
+    same_story: bool = False
+    same_story_confidence: float = 0.0
+
     # Leaning comparison
     leaning_difference: float  # Absolute difference
     leaning_summary: str

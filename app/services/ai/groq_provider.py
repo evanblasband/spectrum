@@ -86,6 +86,7 @@ class GroqProvider(BaseAIProvider):
             secondary_topics=data.get("secondary_topics", []),
             keywords=data.get("keywords", [])[:10],  # Limit to 10 keywords
             entities=data.get("entities", []),
+            story_identifier=data.get("story_identifier"),
         )
 
     async def extract_key_points(
@@ -143,6 +144,32 @@ class GroqProvider(BaseAIProvider):
                 )
 
         return comparisons
+
+    async def compare_story_identifiers(
+        self,
+        story_a: str,
+        story_b: str,
+        title_a: str,
+        title_b: str,
+    ) -> tuple[bool, float]:
+        """Determine if two story identifiers refer to the same news event."""
+        prompt = self._get_compare_story_identifiers_prompt(
+            story_a, story_b, title_a, title_b
+        )
+        messages = [{"role": "user", "content": prompt}]
+
+        response = await self._make_request(messages, json_mode=True)
+        data = json.loads(response)
+
+        same_story = data.get("same_story", False)
+        confidence = data.get("confidence", 0.0)
+
+        logger.debug(
+            f"Story comparison: same={same_story}, confidence={confidence}, "
+            f"reasoning={data.get('reasoning', 'N/A')}"
+        )
+
+        return same_story, confidence
 
     async def health_check(self) -> bool:
         """Check if provider is available."""
