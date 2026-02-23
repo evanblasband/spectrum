@@ -2,6 +2,8 @@
 
 A web application that analyzes news articles to show where they fall on the political spectrum, finds related coverage from other sources, and compares how different outlets cover the same story.
 
+![Spectrum Demo](https://raw.githubusercontent.com/evanblasband/spectrum/master/spectrum.gif)
+
 ## Quick Start
 
 ### Prerequisites
