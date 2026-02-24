@@ -47,7 +47,12 @@ class Settings(BaseSettings):
 
     # Scraping
     scraper_timeout_seconds: int = 30
-    scraper_user_agent: str = "Spectrum/1.0 (News Analysis Bot)"
+    # Browser-like User-Agent to avoid being blocked by news sites
+    scraper_user_agent: str = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    )
 
     model_config = {
         "env_file": ".env",

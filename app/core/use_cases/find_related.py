@@ -2,14 +2,32 @@
 
 import logging
 from typing import Optional
+from urllib.parse import urlparse
 
 from app.core.interfaces.ai_provider import AIProviderInterface
 from app.core.interfaces.article_fetcher import ArticleFetcherInterface
 from app.core.interfaces.cache import CacheInterface
 from app.core.interfaces.news_aggregator import NewsAggregatorInterface, NewsArticlePreview
 from app.services.cache.cache_keys import CacheKeys
+from app.services.fetchers.web_scraper import BLOCKED_SITES
 
 logger = logging.getLogger(__name__)
+
+
+def _is_blocked_source(url: str) -> bool:
+    """Check if a URL is from a blocked source."""
+    try:
+        domain = urlparse(url).netloc.lower()
+        # Remove www. prefix if present
+        if domain.startswith("www."):
+            domain = domain[4:]
+
+        for blocked_domain in BLOCKED_SITES.keys():
+            if domain == blocked_domain or domain.endswith("." + blocked_domain):
+                return True
+        return False
+    except Exception:
+        return False
 
 
 class FindRelatedUseCase:
@@ -72,6 +90,13 @@ class FindRelatedUseCase:
         # Filter out the original URL if present
         if url:
             articles = [a for a in articles if str(a.url) != url]
+
+        # Filter out articles from blocked sources that we can't analyze
+        original_count = len(articles)
+        articles = [a for a in articles if not _is_blocked_source(str(a.url))]
+        filtered_count = original_count - len(articles)
+        if filtered_count > 0:
+            logger.info(f"Filtered out {filtered_count} articles from blocked sources")
 
         # Cache results
         if url and self.cache:

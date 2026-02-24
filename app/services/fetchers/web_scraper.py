@@ -43,6 +43,7 @@ SUPPORTED_SITES = [
     "breitbart.com",
     "latimes.com",
     "theguardian.com",
+    "businessinsider.com",
 ]
 
 # Sites that may work but have inconsistent results
@@ -96,15 +97,21 @@ class WebScraper(ArticleFetcherInterface):
                 timeout=self.timeout,
                 headers={
                     "User-Agent": self.user_agent,
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.5",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "DNT": "1",
-                    "Connection": "keep-alive",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    # Note: Don't set Accept-Encoding - let httpx handle it automatically
+                    "Cache-Control": "max-age=0",
+                    "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                    "Sec-Ch-Ua-Mobile": "?0",
+                    "Sec-Ch-Ua-Platform": '"Windows"',
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-User": "?1",
                     "Upgrade-Insecure-Requests": "1",
                 },
                 follow_redirects=True,
-                http2=True,  # Many news sites require HTTP/2
+                http2=False,  # Disable HTTP/2 to avoid StreamReset detection
             )
         return self._client
 
@@ -384,6 +391,7 @@ class WebScraper(ArticleFetcherInterface):
             "slate.com": "Slate",
             "vox.com": "Vox",
             "theatlantic.com": "The Atlantic",
+            "businessinsider.com": "Business Insider",
         }
 
         if domain in known_sources:
