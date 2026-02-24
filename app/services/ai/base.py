@@ -74,21 +74,45 @@ Title: {title}
 Source: {source or 'Unknown'}
 Content: {content[:8000]}
 
+IMPORTANT: Score each of the 5 criteria first, then calculate the overall "score" as the AVERAGE of all 5 criteria scores.
+
 Provide your analysis as JSON with this exact structure:
 {{
-    "score": <float from -1.0 (far left) to 1.0 (far right), 0 is center>,
+    "criteria_scores": {{
+        "language_and_framing": {{
+            "score": <float from -1.0 to 1.0>,
+            "explanation": "<brief explanation of word choice, framing, and loaded language>"
+        }},
+        "source_selection": {{
+            "score": <float from -1.0 to 1.0>,
+            "explanation": "<brief explanation of which sources/experts are cited>"
+        }},
+        "topic_emphasis": {{
+            "score": <float from -1.0 to 1.0>,
+            "explanation": "<brief explanation of topics emphasized or omitted>"
+        }},
+        "tone_objectivity": {{
+            "score": <float from -1.0 to 1.0>,
+            "explanation": "<brief explanation of emotional vs factual tone>"
+        }},
+        "source_reputation": {{
+            "score": <float from -1.0 to 1.0>,
+            "explanation": "<brief explanation of the publication's known bias>"
+        }}
+    }},
+    "score": <MUST be the average of the 5 criteria scores above>,
     "confidence": <float from 0.0 to 1.0>,
-    "reasoning": "<brief explanation of why you assigned this score>",
+    "reasoning": "<brief explanation summarizing the key factors>",
     "economic_score": <float from -1.0 to 1.0 for economic policy stance, or null if not applicable>,
     "social_score": <float from -1.0 to 1.0 for social policy stance, or null if not applicable>
 }}
 
-Consider:
-- Word choice and framing
-- Sources cited
-- Topics emphasized or omitted
-- Emotional vs factual tone
-- Known bias of the source (if any)
+Criteria definitions:
+- language_and_framing: Word choice, rhetorical framing, and use of charged/loaded terms
+- source_selection: Which experts, studies, or organizations are cited
+- topic_emphasis: What topics are highlighted vs downplayed or omitted
+- tone_objectivity: Balance between factual reporting and emotional appeals
+- source_reputation: Historical political leaning of the publication
 
 Be objective and avoid imposing your own biases. Focus on language patterns and framing.
 

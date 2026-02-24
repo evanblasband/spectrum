@@ -2,6 +2,7 @@ import type { ArticleAnalysis } from '@/lib/api/client'
 import { SpectrumScale } from '@/features/spectrum/components/SpectrumScale'
 import { ConfidenceIndicator } from '@/features/spectrum/components/ConfidenceIndicator'
 import { ArticleSummary } from './ArticleSummary'
+import { ScoreBreakdown } from './ScoreBreakdown'
 import { getLabel, getColor } from '@/features/spectrum/utils/spectrumColors'
 
 interface AnalysisCardProps {
@@ -103,6 +104,9 @@ export function AnalysisCard({ analysis }: AnalysisCardProps) {
             {political_leaning.reasoning}
           </p>
         </div>
+
+        {/* Score Breakdown */}
+        <ScoreBreakdown politicalLeaning={political_leaning} />
       </div>
 
       {/* Article Details */}

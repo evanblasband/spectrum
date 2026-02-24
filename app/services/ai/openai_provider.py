@@ -72,6 +72,7 @@ class OpenAIProvider(BaseAIProvider):
             reasoning=data["reasoning"],
             economic_score=data.get("economic_score"),
             social_score=data.get("social_score"),
+            criteria_scores=data.get("criteria_scores"),
         )
 
     async def extract_topics(

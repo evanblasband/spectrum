@@ -45,12 +45,26 @@ apiClient.interceptors.response.use(
 )
 
 // Types matching backend schemas
+export interface CriterionScore {
+  score: number // -1 to 1
+  explanation: string
+}
+
+export interface CriteriaBreakdown {
+  language_and_framing: CriterionScore
+  source_selection: CriterionScore
+  topic_emphasis: CriterionScore
+  tone_objectivity: CriterionScore
+  source_reputation: CriterionScore
+}
+
 export interface PoliticalLeaning {
   score: number // -1 to 1
   confidence: number // 0 to 1
   reasoning: string
   economic_score: number | null
   social_score: number | null
+  criteria_scores?: CriteriaBreakdown
 }
 
 export interface TopicAnalysis {
