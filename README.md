@@ -4,6 +4,10 @@ A web application that analyzes news articles to show where they fall on the pol
 
 ![Spectrum Demo](https://raw.githubusercontent.com/evanblasband/spectrum/master/spectrum.gif)
 
+# Detailed Walkthrough
+
+[![Detailed Walkthrough](https://img.youtube.com/vi/l0Qids1NvO8/0.jpg)](https://youtu.be/l0Qids1NvO8)
+
 ## Quick Start
 
 ### Prerequisites
