@@ -123,7 +123,8 @@ spectrum-web/
 │   │   │   ├── components/
 │   │   │   │   ├── UrlInputForm.tsx
 │   │   │   │   ├── AnalysisCard.tsx
-│   │   │   │   └── ArticleSummary.tsx
+│   │   │   │   ├── ArticleSummary.tsx
+│   │   │   │   └── ScoreBreakdown.tsx  # Expandable criteria scores
 │   │   │   ├── hooks/
 │   │   │   │   └── useAnalyzeArticle.ts
 │   │   │   └── index.ts
@@ -366,15 +367,29 @@ class Article(BaseModel):
     fetched_at: datetime
 
 # app/core/entities/analysis.py
+class CriterionScore(BaseModel):
+    """Score and explanation for a single analysis criterion."""
+    score: float = Field(..., ge=-1.0, le=1.0)
+    explanation: str
+
+class CriteriaBreakdown(BaseModel):
+    """Breakdown of scores for each analysis criterion."""
+    language_and_framing: CriterionScore
+    source_selection: CriterionScore
+    topic_emphasis: CriterionScore
+    tone_objectivity: CriterionScore
+    source_reputation: CriterionScore
+
 class PoliticalLeaning(BaseModel):
     """Political leaning analysis result."""
-    score: float = Field(..., ge=-1.0, le=1.0, description="-1=far left, 0=center, 1=far right")
+    score: float = Field(..., ge=-1.0, le=1.0, description="-1=far left, 0=center, 1=far right. Calculated as average of 5 criteria scores.")
     confidence: float = Field(..., ge=0.0, le=1.0)
     reasoning: str = Field(..., description="Explanation of the score")
 
     # Detailed breakdown
     economic_score: Optional[float] = Field(None, ge=-1.0, le=1.0)
     social_score: Optional[float] = Field(None, ge=-1.0, le=1.0)
+    criteria_scores: Optional[CriteriaBreakdown] = None  # Individual criterion scores
 
 class TopicAnalysis(BaseModel):
     """Topic and keyword extraction."""

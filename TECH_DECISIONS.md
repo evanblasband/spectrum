@@ -22,6 +22,22 @@ This section tracks changes to technology decisions over time. Each entry includ
 
 ### Change Log
 
+#### 2026-02-24 - Score Transparency - Criteria Breakdown Feature
+**Previous**: Single political leaning score with free-form reasoning
+**New**: Score breakdown showing 5 individual criteria scores, with overall score calculated as their average
+**Trigger**: Users couldn't understand how the political bias score was calculated, reducing trust in the analysis
+**Reasoning**: Transparency is a core product goal. By showing individual scores for Language & Framing, Source Selection, Topic Emphasis, Tone & Objectivity, and Source Reputation, users can see exactly what factors contributed to the final score. Making the overall score a mathematical average of the criteria scores ensures the breakdown is meaningful, not just decorative.
+**Migration notes**:
+- Added `CriterionScore` and `CriteriaBreakdown` models to `app/core/entities/analysis.py`
+- Updated AI prompt in `app/services/ai/base.py` to return criteria scores and calculate overall as average
+- Updated all AI providers (Groq, Claude, OpenAI) to pass through `criteria_scores`
+- Added TypeScript types in `spectrum-web/src/lib/api/client.ts`
+- Created `ScoreBreakdown.tsx` component with accordion UI
+- Integrated into `AnalysisCard.tsx`
+**Lessons**: Score transparency builds user trust. Cached analyses from before this change won't show the breakdown (criteria_scores is optional/null). Future investigation: whether criteria should be weighted differently rather than equally averaged.
+
+---
+
 #### 2026-02-23 - Rate Limiting - slowapi for API Protection
 **Previous**: No rate limiting
 **New**: slowapi with endpoint-specific limits (10/min analyze, 5/min compare, 20/min related)

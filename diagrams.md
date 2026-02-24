@@ -74,16 +74,20 @@ sequenceDiagram
     FE-->>U: Display spectrum + summary
 ```
 
-## Political Analysis Dimensions
+## Political Analysis Criteria
+
+The overall political leaning score is calculated as the **average** of 5 equally-weighted criteria scores:
 
 ```mermaid
-pie title Political Leaning Analysis Weights
-    "Framing Language" : 25
-    "Policy Positioning" : 25
-    "Entity Sentiment" : 20
-    "Source Attribution" : 15
-    "Topic Emphasis" : 15
+pie title Political Leaning Analysis Criteria (Equal Weight)
+    "Language & Framing" : 20
+    "Source Selection" : 20
+    "Topic Emphasis" : 20
+    "Tone & Objectivity" : 20
+    "Source Reputation" : 20
 ```
+
+Each criterion is scored individually from -1.0 (far left) to +1.0 (far right), and the final score is their average. This provides transparency - users can see exactly why an article received its score via the expandable "How was this score calculated?" section.
 
 ## AI Provider Strategy Pattern
 
@@ -213,6 +217,7 @@ flowchart TB
         SpectrumViz[SpectrumScale]
         ConfInd[ConfidenceIndicator]
         Summary[ArticleSummary<br/>Topics + Keywords + Points]
+        ScoreBreak[ScoreBreakdown<br/>Criteria scores accordion]
     end
 
     subgraph RelatedComponents["Related Articles Components"]

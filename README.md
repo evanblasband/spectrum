@@ -196,6 +196,11 @@ DEBUG=true
   - Confidence indicator with info tooltip explaining methodology
   - Brief article summary generated from topics and key points
   - AI-generated reasoning for the political score
+  - **Score transparency breakdown**: Expandable "How was this score calculated?" section showing:
+    - Individual scores for 5 criteria (Language & Framing, Source Selection, Topic Emphasis, Tone & Objectivity, Source Reputation)
+    - Mini spectrum bar for each criterion with explanation
+    - Economic and Social dimension scores (when applicable)
+    - Overall score is the average of the 5 criteria scores
   - Topic and keyword extraction
   - Key points identification
 
@@ -236,6 +241,8 @@ DEBUG=true
 - [x] **Rate limiting** - API rate limits to prevent abuse (10 analyze/min, 5 compare/min)
 - [x] **Docker deployment** - Production-ready Docker configuration with multi-stage builds
 - [x] **Hosting setup** - Render blueprint for easy deployment
+- [x] **Score transparency** - Expandable breakdown showing individual criteria scores
+- [ ] **Criteria weighting investigation** - Analyze whether criteria should be weighted differently (currently equal)
 - [ ] **Fix comparison feature** - Investigate and fix issues with the article comparison functionality
 - [ ] **Security audit** - Review input validation, XSS prevention, API key handling, dependency vulnerabilities
 
